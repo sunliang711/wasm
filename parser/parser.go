@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"sync"
+	"time"
 	"wasm/utils"
 )
 
@@ -87,7 +88,9 @@ type Parser struct {
 	ChSection chan *Section
 	ChErr     chan error
 	ChQuit    chan struct{}
+	ChDone    chan struct{}
 	Wg        *sync.WaitGroup
+	Closed bool
 }
 
 type Section struct {
@@ -107,7 +110,9 @@ func New(filename string) (*Parser, error) {
 		ChSection: make(chan *Section),
 		ChErr:     make(chan error),
 		ChQuit:    make(chan struct{}),
+		ChDone:    make(chan struct{}),
 		Wg:        new(sync.WaitGroup),
+		Closed:false,
 	}, nil
 }
 
@@ -143,7 +148,7 @@ func (p *Parser) startParse() {
 		_, err := p.Stream.Read(bufType)
 		if err == io.EOF {
 			logrus.Info("EOF")
-			p.Stop()
+			close(p.ChDone)
 			break
 		} else if err != nil {
 			p.ChErr <- err
@@ -203,21 +208,22 @@ func (p *Parser) loop() {
 
 		case section := <-p.ChSection:
 			logrus.Infof("loop(): got section: %v", section)
-			//go p.parseSection(section)
-			go func() {
-				defer p.Wg.Done()
-				p.parseSection(section)
-			}()
+			go p.parseSection(section)
 
 		case <-p.ChQuit:
-			p.Wg.Wait()
 			logrus.Infof("loop(): quit.")
+			return
+
+		case <-p.ChDone:
+			p.Wg.Wait()
+			logrus.Infof("done.")
 			return
 		}
 	}
 }
 
 func (p *Parser) parseSection(sec *Section) {
+	defer p.Wg.Done()
 	switch sec.Type {
 	case OrderType:
 		logrus.Info("parseSection(): type section")
@@ -244,13 +250,18 @@ func (p *Parser) parseSection(sec *Section) {
 	case OrderData:
 		logrus.Info("parseSection(): data section")
 	case OrderUser:
-		logrus.Infof("parseSection(): user section %v",sec.NumSectionBytes)
+		logrus.Infof("begin parseSection(): user section %v", sec.NumSectionBytes)
+		time.Sleep(time.Second * 1)
+		logrus.Infof("end parseSection(): user section %v", sec.NumSectionBytes)
 	}
-	p.ChErr <- fmt.Errorf("parse section error")
+	//p.ChErr <- fmt.Errorf("parse section error")
 }
 
 func (p *Parser) Stop() {
-	close(p.ChQuit)
+	if !p.Closed{
+		close(p.ChQuit)
+		p.Closed = true
+	}
 }
 
 func CheckConstant(rd io.Reader, constant []byte, errMsg string) error {
