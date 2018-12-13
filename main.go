@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"wasm/parser"
 )
 
@@ -36,5 +37,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	parser.Start()
+	fmt.Println(parser.Parse())
 }

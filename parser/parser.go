@@ -116,12 +116,12 @@ func New(filename string) (*Parser, error) {
 	}, nil
 }
 
-func (p *Parser) Start() {
-	go p.startParse()
-	p.loop()
+func (p *Parser) Parse() error{
+	go p.fileLoop()
+	return p.eventLoop()
 }
 
-func (p *Parser) startParse() {
+func (p *Parser) fileLoop() {
 	var (
 		bufType = make([]byte, 1)
 		bufData []byte
@@ -199,25 +199,26 @@ func (p *Parser) startParse() {
 
 }
 
-func (p *Parser) loop() {
+func (p *Parser) eventLoop() error{
+	err := fmt.Errorf("quit")
 	for {
 		select {
-		case err := <-p.ChErr:
+		case err = <-p.ChErr:
 			logrus.Errorf("loop(): error: %s", err.Error())
 			p.Stop()
+
+		case <-p.ChQuit:
+			logrus.Infof("loop(): quit.")
+			return err
 
 		case section := <-p.ChSection:
 			logrus.Infof("loop(): got section: %v", section)
 			go p.parseSection(section)
 
-		case <-p.ChQuit:
-			logrus.Infof("loop(): quit.")
-			return
-
 		case <-p.ChDone:
 			p.Wg.Wait()
 			logrus.Infof("done.")
-			return
+			return nil
 		}
 	}
 }
@@ -254,7 +255,7 @@ func (p *Parser) parseSection(sec *Section) {
 		time.Sleep(time.Second * 1)
 		logrus.Infof("end parseSection(): user section %v", sec.NumSectionBytes)
 	}
-	//p.ChErr <- fmt.Errorf("parse section error")
+	p.ChErr <- fmt.Errorf("parse section error")
 }
 
 func (p *Parser) Stop() {
