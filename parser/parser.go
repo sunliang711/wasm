@@ -7,7 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"sync"
-	"time"
+	"wasm/types"
 	"wasm/utils"
 )
 
@@ -20,6 +20,8 @@ const (
 	ErrVersion     = "Version number error"
 
 	ErrInsufficientBytes = "Got insufficient bytes"
+
+	ErrUnknownSection = "Error unknown section"
 )
 
 var (
@@ -90,13 +92,29 @@ type Parser struct {
 	ChQuit    chan struct{}
 	ChDone    chan struct{}
 	Wg        *sync.WaitGroup
-	Closed bool
+	Module    *Module
+	Closed    bool
+}
+type Module struct {
+	Types []types.FunctionType
+
+	//TODO
+	//[]types.Exports
+	//[]types.Data
+	//[]elementSegments
+	//[]userSections
+
+	StartFunctionIndex int
 }
 
 type Section struct {
 	Type            byte
 	NumSectionBytes uint32
 	Data            []byte
+}
+
+func (sec Section) String() string {
+	return fmt.Sprintf("{Type: %d,NumSectionBytes: %d,Data: %v}", sec.Type, sec.NumSectionBytes, sec.Data)
 }
 
 func New(filename string) (*Parser, error) {
@@ -112,11 +130,12 @@ func New(filename string) (*Parser, error) {
 		ChQuit:    make(chan struct{}),
 		ChDone:    make(chan struct{}),
 		Wg:        new(sync.WaitGroup),
-		Closed:false,
+		Module:    new(Module),
+		Closed:    false,
 	}, nil
 }
 
-func (p *Parser) Parse() error{
+func (p *Parser) Parse() error {
 	go p.fileLoop()
 	return p.eventLoop()
 }
@@ -147,7 +166,7 @@ func (p *Parser) fileLoop() {
 		// get section type,if read 0 byte, more => false
 		_, err := p.Stream.Read(bufType)
 		if err == io.EOF {
-			logrus.Info("EOF")
+			logrus.Info("fileLoop(): End of file")
 			close(p.ChDone)
 			break
 		} else if err != nil {
@@ -155,8 +174,11 @@ func (p *Parser) fileLoop() {
 			break
 		}
 		rawSectionType := bufType[0]
-		logrus.Infof("section type: %d", rawSectionType)
 		orderSection := sectionType2Order[rawSectionType]
+		if orderSection == OrderUnknown {
+			p.ChErr <- fmt.Errorf(ErrUnknownSection)
+			break
+		}
 
 		//check section order
 		if orderSection != OrderUser {
@@ -173,7 +195,6 @@ func (p *Parser) fileLoop() {
 			p.ChErr <- err
 			break
 		}
-		logrus.Infof("section num bytes: %d", sectionNumBytes)
 
 		// get section data
 		bufData = make([]byte, sectionNumBytes)
@@ -193,73 +214,77 @@ func (p *Parser) fileLoop() {
 			NumSectionBytes: sectionNumBytes,
 			Data:            bufData,
 		}
+		logrus.Infof("fileLoop(): Found new section: %v",section)
 		p.Wg.Add(1)
 		p.ChSection <- section
 	}
 
 }
 
-func (p *Parser) eventLoop() error{
+func (p *Parser) eventLoop() error {
 	err := fmt.Errorf("quit")
 	for {
 		select {
 		case err = <-p.ChErr:
-			logrus.Errorf("loop(): error: %s", err.Error())
+			logrus.Errorf("eventLoop(): error: %s", err.Error())
 			p.Stop()
 
 		case <-p.ChQuit:
-			logrus.Infof("loop(): quit.")
+			logrus.Infof("eventLoop(): quit.")
 			return err
 
 		case section := <-p.ChSection:
-			logrus.Infof("loop(): got section: %v", section)
+			logrus.Infof("eventLoop(): Got section: %v", section)
 			go p.parseSection(section)
 
 		case <-p.ChDone:
 			p.Wg.Wait()
-			logrus.Infof("done.")
+			logrus.Infof("Parse done.")
 			return nil
 		}
 	}
 }
 
 func (p *Parser) parseSection(sec *Section) {
+	var (
+		err error
+	)
 	defer p.Wg.Done()
 	switch sec.Type {
 	case OrderType:
-		logrus.Info("parseSection(): type section")
+		err = p.typeSection(sec)
 	case OrderImport:
-		logrus.Info("parseSection(): import section")
+		err = p.importSection(sec)
 	case OrderFunctionDeclarations:
-		logrus.Info("parseSection(): function delcarations section")
+		err = p.functionDeclarationsSection(sec)
 	case OrderTable:
-		logrus.Info("parseSection(): table section")
+		err = p.tableSection(sec)
 	case OrderMemory:
-		logrus.Info("parseSection(): memory section")
+		err = p.memorySection(sec)
 	case OrderGlobal:
-		logrus.Info("parseSection(): global section")
+		err = p.globalSection(sec)
 	case OrderExceptionTypes:
-		logrus.Info("parseSection(): exception types section")
+		err = p.exceptionTypesSection(sec)
 	case OrderExport:
-		logrus.Info("parseSection(): export section")
+		err = p.exportSection(sec)
 	case OrderStart:
-		logrus.Info("parseSection(): start section")
+		err = p.startSection(sec)
 	case OrderElem:
-		logrus.Info("parseSection(): elem section")
+		err = p.elemSection(sec)
 	case OrderFunctionDefinitions:
-		logrus.Info("parseSection(): function definition section")
+		err = p.functionDefinitionsSection(sec)
 	case OrderData:
-		logrus.Info("parseSection(): data section")
+		err = p.dataSection(sec)
 	case OrderUser:
-		logrus.Infof("begin parseSection(): user section %v", sec.NumSectionBytes)
-		time.Sleep(time.Second * 1)
-		logrus.Infof("end parseSection(): user section %v", sec.NumSectionBytes)
+		err = p.userSection(sec)
 	}
-	p.ChErr <- fmt.Errorf("parse section error")
+	if err != nil {
+		p.ChErr <- err
+	}
 }
 
 func (p *Parser) Stop() {
-	if !p.Closed{
+	if !p.Closed {
 		close(p.ChQuit)
 		p.Closed = true
 	}
@@ -282,56 +307,3 @@ func CheckConstant(rd io.Reader, constant []byte, errMsg string) error {
 	}
 	return nil
 }
-
-func loadSection(rd io.Reader, decodebody decodeBody) error {
-
-	//step 1
-	sectionBytes, err := utils.DecodeUInt32(rd)
-	if err != nil {
-		return err
-	}
-	//step 2
-	decodebody(rd, sectionBytes)
-
-	return nil
-}
-
-//func LoadSections(rd io.Reader) error {
-//	var (
-//		buf             []byte
-//		lastSectionType byte
-//	)
-//	buf = make([]byte, 1)
-//
-//	for {
-//		_, err := rd.Read(buf)
-//		if err != nil {
-//			return fmt.Errorf(ErrReadSectionType)
-//		}
-//		lastSectionType = st_unknown
-//		sectionType := buf[0]
-//		if sectionType != st_user {
-//			if sectionType > lastSectionType {
-//				lastSectionType = sectionType
-//			} else {
-//				return fmt.Errorf(ErrIncorrectOrder)
-//			}
-//		}
-//		switch sectionType {
-//		case st_type:
-//		case st_import:
-//		case st_functionDeclarations:
-//		case st_table:
-//		case st_memory:
-//		case st_global:
-//		case st_exceptionTypes:
-//		case st_export_:
-//		case st_start:
-//		case st_elem:
-//		case st_functionDefinitions:
-//		case st_data:
-//		case st_user:
-//		}
-//
-//	}
-//}
