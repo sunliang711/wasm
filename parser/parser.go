@@ -11,79 +11,10 @@ import (
 	"wasm/utils"
 )
 
-const (
-	ErrReadCount       = "Read count error"
-	ErrReadSectionType = "Read section type error"
-	ErrIncorrectOrder  = "Incorrect order for known section"
-
-	ErrMagicNumber = "Magic number error"
-	ErrVersion     = "Version number error"
-
-	ErrInsufficientBytes = "Got insufficient bytes"
-
-	ErrUnknownSection = "Error unknown section"
-)
-
 var (
 	MagicNumber    = []byte{0x00, 0x61, 0x73, 0x6d}
 	CurrentVersion = []byte{0x01, 0x00, 0x00, 0x00}
 )
-
-const (
-	//section type (0x00-0x0b,0x7f)
-	SectionUser = iota
-	SectionType
-	SectionImport
-	SectionFunctionDeclarations
-	SectionTable
-	SectionMemory
-	SectionGlobal
-	SectionExport
-	SectionStart
-	SectionElem
-	SectionFunctionDefinitions
-	SectionData
-
-	SectionExceptionTypes byte = 0x7f
-)
-
-const (
-	//section type order
-	OrderUnknown byte = iota
-	OrderType
-	OrderImport
-	OrderFunctionDeclarations
-	OrderTable
-	OrderMemory
-	OrderGlobal
-	OrderExceptionTypes
-	OrderExport
-	OrderStart
-	OrderElem
-	OrderFunctionDefinitions
-	OrderData
-	OrderUser
-)
-
-var (
-	sectionType2Order = map[byte]byte{
-		SectionUser:                 OrderUser,
-		SectionType:                 OrderType,
-		SectionImport:               OrderImport,
-		SectionFunctionDeclarations: OrderFunctionDeclarations,
-		SectionTable:                OrderTable,
-		SectionMemory:               OrderMemory,
-		SectionGlobal:               OrderGlobal,
-		SectionExport:               OrderExport,
-		SectionStart:                OrderStart,
-		SectionElem:                 OrderElem,
-		SectionFunctionDefinitions:  OrderFunctionDefinitions,
-		SectionData:                 OrderData,
-		SectionExceptionTypes:       OrderExceptionTypes,
-	}
-)
-
-type decodeBody func(rd io.Reader, numbytes uint32) error
 
 type Parser struct {
 	Stream    io.Reader
@@ -146,19 +77,19 @@ func (p *Parser) fileLoop() {
 		bufData []byte
 	)
 	// check magic number
-	err := CheckConstant(p.Stream, MagicNumber, ErrMagicNumber)
+	err := checkConstant(p.Stream, MagicNumber, types.ErrMagicNumber)
 	if err != nil {
-		p.ChErr <- err
+		p.NotifyError(err)
 		return
 	}
 	// check version
-	err = CheckConstant(p.Stream, CurrentVersion, ErrVersion)
+	err = checkConstant(p.Stream, CurrentVersion, types.ErrVersion)
 	if err != nil {
-		p.ChErr <- err
+		p.NotifyError(err)
 		return
 	}
 
-	lastSectionType := OrderUnknown
+	lastSectionType := types.OrderUnknown
 
 	// read loop
 	// get section bytes,then send to loop()
@@ -170,29 +101,29 @@ func (p *Parser) fileLoop() {
 			close(p.ChDone)
 			break
 		} else if err != nil {
-			p.ChErr <- err
+			p.NotifyError(err)
 			break
 		}
 		rawSectionType := bufType[0]
-		orderSection := sectionType2Order[rawSectionType]
-		if orderSection == OrderUnknown {
-			p.ChErr <- fmt.Errorf(ErrUnknownSection)
+		orderSection, err := types.SectionType2Order(rawSectionType)
+		if err != nil {
+			p.NotifyError(err)
 			break
 		}
 
 		//check section order
-		if orderSection != OrderUser {
+		if orderSection != types.OrderUser {
 			if orderSection > lastSectionType {
 				lastSectionType = orderSection
 			} else {
-				p.ChErr <- fmt.Errorf(ErrIncorrectOrder)
+				p.NotifyError(fmt.Errorf(types.ErrIncorrectOrder))
 				break
 			}
 		}
 		// get section num bytes
 		sectionNumBytes, err := utils.DecodeUInt32(p.Stream)
 		if err != nil {
-			p.ChErr <- err
+			p.NotifyError(err)
 			break
 		}
 
@@ -200,11 +131,11 @@ func (p *Parser) fileLoop() {
 		bufData = make([]byte, sectionNumBytes)
 		n, err := p.Stream.Read(bufData)
 		if err != nil {
-			p.ChErr <- err
+			p.NotifyError(err)
 			break
 		}
 		if uint32(n) != sectionNumBytes {
-			p.ChErr <- fmt.Errorf(ErrInsufficientBytes)
+			p.NotifyError(fmt.Errorf(types.ErrInsufficientBytes))
 			break
 		}
 
@@ -214,7 +145,7 @@ func (p *Parser) fileLoop() {
 			NumSectionBytes: sectionNumBytes,
 			Data:            bufData,
 		}
-		logrus.Infof("fileLoop(): Found new section: %v",section)
+		logrus.Infof("fileLoop(): Found new section: %v", section)
 		p.Wg.Add(1)
 		p.ChSection <- section
 	}
@@ -251,35 +182,35 @@ func (p *Parser) parseSection(sec *Section) {
 	)
 	defer p.Wg.Done()
 	switch sec.Type {
-	case OrderType:
+	case types.OrderType:
 		err = p.typeSection(sec)
-	case OrderImport:
+	case types.OrderImport:
 		err = p.importSection(sec)
-	case OrderFunctionDeclarations:
+	case types.OrderFunctionDeclarations:
 		err = p.functionDeclarationsSection(sec)
-	case OrderTable:
+	case types.OrderTable:
 		err = p.tableSection(sec)
-	case OrderMemory:
+	case types.OrderMemory:
 		err = p.memorySection(sec)
-	case OrderGlobal:
+	case types.OrderGlobal:
 		err = p.globalSection(sec)
-	case OrderExceptionTypes:
+	case types.OrderExceptionTypes:
 		err = p.exceptionTypesSection(sec)
-	case OrderExport:
+	case types.OrderExport:
 		err = p.exportSection(sec)
-	case OrderStart:
+	case types.OrderStart:
 		err = p.startSection(sec)
-	case OrderElem:
+	case types.OrderElem:
 		err = p.elemSection(sec)
-	case OrderFunctionDefinitions:
+	case types.OrderFunctionDefinitions:
 		err = p.functionDefinitionsSection(sec)
-	case OrderData:
+	case types.OrderData:
 		err = p.dataSection(sec)
-	case OrderUser:
+	case types.OrderUser:
 		err = p.userSection(sec)
 	}
 	if err != nil {
-		p.ChErr <- err
+		p.NotifyError(err)
 	}
 }
 
@@ -290,20 +221,6 @@ func (p *Parser) Stop() {
 	}
 }
 
-func CheckConstant(rd io.Reader, constant []byte, errMsg string) error {
-	numBytes := len(constant)
-	buf := make([]byte, numBytes)
-	nRead, err := rd.Read(buf)
-	if err != nil {
-		return err
-	}
-	if nRead != numBytes {
-		return fmt.Errorf(ErrReadCount)
-	}
-	for i := 0; i < numBytes; i++ {
-		if buf[i] != constant[i] {
-			return fmt.Errorf(errMsg)
-		}
-	}
-	return nil
+func (p *Parser) NotifyError(err error) {
+	p.ChErr <- err
 }

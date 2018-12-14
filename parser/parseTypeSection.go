@@ -2,18 +2,10 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
 	"wasm/types"
 	"wasm/utils"
-)
-
-const (
-	ErrNotTypeSection = "Not a type section"
-	ErrTypeSectionNum = "Type section number valid"
-
-	ErrFunctionTag = "Not a function tag"
 )
 
 var (
@@ -21,12 +13,10 @@ var (
 )
 
 func (p *Parser) typeSection(sec *Section) error {
-	if sec.Type != OrderType {
-		return fmt.Errorf(ErrNotTypeSection)
-	}
 
-	if len(sec.Data) != int(sec.NumSectionBytes) {
-		return fmt.Errorf(ErrTypeSectionNum)
+	err := checkSection(sec, types.OrderType)
+	if err != nil {
+		return err
 	}
 
 	var (
@@ -42,7 +32,7 @@ func (p *Parser) typeSection(sec *Section) error {
 	}
 	for index := 0; index < int(size); index++ {
 		// 1. functionTag
-		err = CheckConstant(rd, functionTag, ErrFunctionTag)
+		err = checkConstant(rd, functionTag, types.ErrFunctionTag)
 		if err != nil {
 			return err
 		}
