@@ -1,6 +1,10 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"wasm/utils"
+)
 
 type ValueType byte
 
@@ -15,8 +19,8 @@ const (
 	TypeAnyRef
 	TypeAnyFunc
 	TypeNullRef
-
-	TypeMax = TypeNullRef - TypeNone
+	TypeNum
+	TypeMax = TypeNum - TypeNone
 )
 
 const (
@@ -47,8 +51,13 @@ func (vt ValueType) String() string {
 	return "type:none"
 }
 
-func DecodeValueType(vt int32) (ValueType, error) {
-	switch vt {
+func DecodeValueType(rd io.Reader) (ValueType, error) {
+	vType, err := utils.DecodeInt32(rd)
+	if err != nil {
+		return TypeNone, err
+	}
+
+	switch vType {
 	case -1:
 		return TypeI32, nil;
 	case -2:
@@ -63,6 +72,7 @@ func DecodeValueType(vt int32) (ValueType, error) {
 		return TypeAnyFunc, nil;
 	case -17:
 		return TypeAnyRef, nil;
+	default:
+		return TypeNone, fmt.Errorf(ErrInvalidValueType)
 	}
-	return TypeNone, fmt.Errorf(ErrInvalidValueType)
 }

@@ -68,11 +68,7 @@ func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 	tuple.NumElems = n
 	// 2. params (or results) array
 	for i := 0; i < int(n); i++ {
-		vType, err := utils.DecodeInt32(rd)
-		if err != nil {
-			return err
-		}
-		valueType, err := types.DecodeValueType(vType)
+		valueType, err := types.DecodeValueType(rd)
 		if err != nil {
 			return err
 		}

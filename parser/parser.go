@@ -23,20 +23,10 @@ type Parser struct {
 	ChQuit    chan struct{}
 	ChDone    chan struct{}
 	Wg        *sync.WaitGroup
-	Module    *Module
+	Module    *types.Module
 	Closed    bool
 }
-type Module struct {
-	Types []types.FunctionType
 
-	//TODO
-	//[]types.Exports
-	//[]types.Data
-	//[]elementSegments
-	//[]userSections
-
-	StartFunctionIndex int
-}
 
 type Section struct {
 	Type            byte
@@ -61,7 +51,7 @@ func New(filename string) (*Parser, error) {
 		ChQuit:    make(chan struct{}),
 		ChDone:    make(chan struct{}),
 		Wg:        new(sync.WaitGroup),
-		Module:    new(Module),
+		Module:    new(types.Module),
 		Closed:    false,
 	}, nil
 }
@@ -104,7 +94,7 @@ func (p *Parser) fileLoop() {
 			p.NotifyError(err)
 			break
 		}
-		rawSectionType := bufType[0]
+		rawSectionType := types.RawSecType(bufType[0])
 		orderSection, err := types.SectionType2Order(rawSectionType)
 		if err != nil {
 			p.NotifyError(err)
@@ -166,7 +156,7 @@ func (p *Parser) eventLoop() error {
 
 		case section := <-p.ChSection:
 			logrus.Infof("eventLoop(): Got section: %v", section)
-			go p.parseSection(section)
+			p.parseSection(section)
 
 		case <-p.ChDone:
 			p.Wg.Wait()

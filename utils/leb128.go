@@ -38,7 +38,6 @@ func DecodeInt32(rd io.Reader) (int32, error) {
 	bytes := make([]byte, maxBytes)
 
 	signExtendShift := 32;
-
 	for numBytes < maxBytes {
 		_, err := rd.Read(buf)
 		if err != nil {
@@ -59,5 +58,61 @@ func DecodeInt32(rd io.Reader) (int32, error) {
 		result |= int32(bytes[i]&0x7f) << uint32(i*7)
 	}
 	result = (result << uint(signExtendShift)) >> uint(signExtendShift)
+	return result, nil
+}
+
+func DecodeUInt64(rd io.Reader) (uint64, error) {
+	buf := make([]byte, 1)
+	maxBits := 64
+	maxBytes := (maxBits + 6) / 7
+	numBytes := 0
+	bytes := make([]byte, maxBytes)
+	for numBytes < maxBytes {
+		_, err := rd.Read(buf)
+		if err != nil {
+			return 0, err
+		}
+
+		byt := buf[0]
+		bytes[numBytes] = byt
+		numBytes += 1
+		if byt&0x80 == 0 {
+			break
+		}
+	}
+
+	var result uint64
+	for i := 0; i < maxBytes; i++ {
+		result |= uint64(bytes[i]&0x7f) << uint64(i*7)
+	}
+
+	return result, nil
+}
+
+func DecodeU1(rd io.Reader) (byte, error) {
+	buf := make([]byte, 1)
+	maxBits := 1
+	maxBytes := (maxBits + 6) / 7
+	numBytes := 0
+	bytes := make([]byte, maxBytes)
+	for numBytes < maxBytes {
+		_, err := rd.Read(buf)
+		if err != nil {
+			return 0, err
+		}
+
+		byt := buf[0]
+		bytes[numBytes] = byt
+		numBytes += 1
+		if byt&0x80 == 0 {
+			break
+		}
+	}
+
+	var result byte
+	for i := 0; i < maxBytes; i++ {
+		result |= byte(bytes[i]&0x7f) << byte(i*7)
+	}
+
 	return result, nil
 }

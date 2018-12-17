@@ -2,9 +2,11 @@ package types
 
 import "fmt"
 
+type RawSecType byte
+
 const (
 	//section type (0x00-0x0b,0x7f)
-	SectionUser = iota
+	SectionUser RawSecType = iota
 	SectionType
 	SectionImport
 	SectionFunctionDeclarations
@@ -17,7 +19,7 @@ const (
 	SectionFunctionDefinitions
 	SectionData
 
-	SectionExceptionTypes byte = 0x7f
+	SectionExceptionTypes RawSecType = 0x7f
 )
 
 const (
@@ -39,7 +41,7 @@ const (
 )
 
 var (
-	sectionType2Order = map[byte]byte{
+	sectionType2Order = map[RawSecType]byte{
 		SectionUser:                 OrderUser,
 		SectionType:                 OrderType,
 		SectionImport:               OrderImport,
@@ -72,7 +74,7 @@ var (
 	}
 )
 
-func SectionType2Order(rawSec byte) (byte, error) {
+func SectionType2Order(rawSec RawSecType) (byte, error) {
 	orderSec, ok := sectionType2Order[rawSec]
 	if !ok {
 		return OrderUnknown, fmt.Errorf(ErrUnknownSection, rawSec)

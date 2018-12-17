@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 )
 
@@ -24,4 +25,9 @@ func ReadVarChars(rd io.Reader) ([]byte, error) {
 		return nil, fmt.Errorf(ErrInsufficientChar)
 	}
 	return chars, nil
+}
+
+func CheckUTF8(src []byte) error {
+	logrus.Info("TODO: CheckUTF8()")
+	return nil
 }
