@@ -11,7 +11,8 @@ const (
 )
 
 func ReadVarChars(rd io.Reader) ([]byte, error) {
-	numChar, err := DecodeUInt32(rd)
+	var numChar uint32
+	err := DecodeVarInt(rd, 32, &numChar)
 	if err != nil {
 		return nil, err
 	}

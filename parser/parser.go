@@ -25,8 +25,9 @@ type Parser struct {
 	Wg        *sync.WaitGroup
 	Module    *types.Module
 	Closed    bool
-}
 
+	typeParsed chan struct{}
+}
 
 type Section struct {
 	Type            byte
@@ -45,14 +46,15 @@ func New(filename string) (*Parser, error) {
 	}
 
 	return &Parser{
-		Stream:    bytes.NewReader(content),
-		ChSection: make(chan *Section),
-		ChErr:     make(chan error),
-		ChQuit:    make(chan struct{}),
-		ChDone:    make(chan struct{}),
-		Wg:        new(sync.WaitGroup),
-		Module:    new(types.Module),
-		Closed:    false,
+		Stream:     bytes.NewReader(content),
+		ChSection:  make(chan *Section),
+		ChErr:      make(chan error),
+		ChQuit:     make(chan struct{}),
+		ChDone:     make(chan struct{}),
+		Wg:         new(sync.WaitGroup),
+		Module:     new(types.Module),
+		Closed:     false,
+		typeParsed: make(chan struct{}, 1),
 	}, nil
 }
 
@@ -111,7 +113,8 @@ func (p *Parser) fileLoop() {
 			}
 		}
 		// get section num bytes
-		sectionNumBytes, err := utils.DecodeUInt32(p.Stream)
+		var sectionNumBytes uint32
+		err = utils.DecodeVarInt(p.Stream, 32, &sectionNumBytes)
 		if err != nil {
 			p.NotifyError(err)
 			break
@@ -156,7 +159,7 @@ func (p *Parser) eventLoop() error {
 
 		case section := <-p.ChSection:
 			logrus.Infof("eventLoop(): Got section: %v", section)
-			p.parseSection(section)
+			go p.parseSection(section)
 
 		case <-p.ChDone:
 			p.Wg.Wait()

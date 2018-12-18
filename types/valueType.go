@@ -1,11 +1,5 @@
 package types
 
-import (
-	"fmt"
-	"io"
-	"wasm/utils"
-)
-
 type ValueType byte
 
 const (
@@ -24,7 +18,7 @@ const (
 )
 
 const (
-	ErrInvalidValueType = "Invalid valud type"
+	ErrInvalidValueType = "Invalid value type"
 )
 
 func (vt ValueType) String() string {
@@ -51,28 +45,33 @@ func (vt ValueType) String() string {
 	return "type:none"
 }
 
-func DecodeValueType(rd io.Reader) (ValueType, error) {
-	vType, err := utils.DecodeInt32(rd)
-	if err != nil {
-		return TypeNone, err
-	}
-
-	switch vType {
-	case -1:
-		return TypeI32, nil;
-	case -2:
-		return TypeI64, nil;
-	case -3:
-		return TypeF32, nil;
-	case -4:
-		return TypeF64, nil;
-	case -5:
-		return TypeV128, nil;
-	case -16:
-		return TypeAnyFunc, nil;
-	case -17:
-		return TypeAnyRef, nil;
-	default:
-		return TypeNone, fmt.Errorf(ErrInvalidValueType)
-	}
-}
+//func DecodeValueType(rd io.Reader) (ValueType, error) {
+//	//vType, err := utils.DecodeInt32(rd)
+//	//if err != nil {
+//	//	return TypeNone, err
+//	//}
+//	var vType int32
+//	err := utils.DecodeVarInt(rd,32,&vType)
+//	if err != nil {
+//		return TypeNone, err
+//	}
+//
+//	switch vType {
+//	case -1:
+//		return TypeI32, nil;
+//	case -2:
+//		return TypeI64, nil;
+//	case -3:
+//		return TypeF32, nil;
+//	case -4:
+//		return TypeF64, nil;
+//	case -5:
+//		return TypeV128, nil;
+//	case -16:
+//		return TypeAnyFunc, nil;
+//	case -17:
+//		return TypeAnyRef, nil;
+//	default:
+//		return TypeNone, fmt.Errorf(ErrInvalidValueType)
+//	}
+//}

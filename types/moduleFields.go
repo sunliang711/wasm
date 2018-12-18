@@ -1,8 +1,22 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type RefType byte
+
+func (r RefType) String() string {
+	switch r {
+	case RTInvalid:
+		return fmt.Sprintf("{ReferenceType: Invalid(%d)}", byte(r))
+	case RTAnyRef:
+		return fmt.Sprintf("{ReferenceType: AnyRef(%d)}", byte(r))
+	case RTAnyFunc:
+		return fmt.Sprintf("{ReferenceType: AnyFunc(%d)}", byte(r))
+	}
+	return fmt.Sprintf("{ReferenceType: Unknown(%d)}", byte(r))
+}
 
 const (
 	RTInvalid RefType = 0
@@ -13,6 +27,10 @@ const (
 type SizeConstraints struct {
 	Min uint64
 	Max uint64
+}
+
+func (s SizeConstraints) String() string {
+	return fmt.Sprintf("{Min: %d,Max: %d}", s.Min, s.Max)
 }
 
 type FunctionType struct {
@@ -35,10 +53,18 @@ type IndexedFunctionType struct {
 	Index uint64
 }
 
+func (i IndexedFunctionType) String() string {
+	return fmt.Sprintf("{Index: %d}", i.Index)
+}
+
 type TableType struct {
 	ElementType RefType
 	IsShared    bool
 	Size        SizeConstraints
+}
+
+func (t TableType) String() string {
+	return fmt.Sprintf("{ElementType: %v,IsShared: %v,Size: %v}", t.ElementType, t.IsShared, t.Size)
 }
 
 type MemoryType struct {
@@ -46,13 +72,25 @@ type MemoryType struct {
 	Size     SizeConstraints
 }
 
+func (m MemoryType) String() string {
+	return fmt.Sprintf("{IsShared: %v,Size: %v}", m.IsShared, m.Size)
+}
+
 type GlobalType struct {
 	IsMutable bool
 	ValType   ValueType
 }
 
+func (g GlobalType) String() string {
+	return fmt.Sprintf("{IsMutable:%v,ValType:%v}", g.IsMutable, g.ValType)
+}
+
 type ExceptionType struct {
 	Params TypeTuple
+}
+
+func (e ExceptionType) String() string {
+	return fmt.Sprintf("{Params: %v}", e.Params)
 }
 
 //}}basicType END
@@ -62,10 +100,18 @@ type ImportCommon struct {
 	ExportName string
 }
 
+func (i ImportCommon) String() string {
+	return fmt.Sprintf("{ModuleName: %s,ExportName: %s}", i.ModuleName, i.ExportName)
+}
+
 //{{import BEGIN
 type ImportIndexedFunctionType struct {
 	Type IndexedFunctionType
 	ImportCommon
+}
+
+func (i ImportIndexedFunctionType) String() string {
+	return fmt.Sprintf("{Type: %v,ImportCommon: %v}", i.Type, i.ImportCommon)
 }
 
 type ImportTableType struct {
@@ -73,9 +119,17 @@ type ImportTableType struct {
 	ImportCommon
 }
 
+func (i ImportTableType) String() string {
+	return fmt.Sprintf("{Type: %v,ImportCommon: %v}", i.Type, i.ImportCommon)
+}
+
 type ImportMemoryType struct {
 	Type MemoryType
 	ImportCommon
+}
+
+func (i ImportMemoryType) String() string {
+	return fmt.Sprintf("{Type: %v,Import Common: %v}", i.Type, i.ImportCommon)
 }
 
 type ImportGlobalType struct {
@@ -83,9 +137,17 @@ type ImportGlobalType struct {
 	ImportCommon
 }
 
+func (i ImportGlobalType) String() string {
+	return fmt.Sprintf("{Type: %v,ImportCommon: %v}", i.Type, i.ImportCommon)
+}
+
 type ImportExceptionType struct {
 	Type ExceptionType
 	ImportCommon
+}
+
+func (i ImportExceptionType) String() string {
+	return fmt.Sprintf("{Type: %v,ImportCommon: %v}", i.Type, i.ImportCommon)
 }
 
 //}}import END

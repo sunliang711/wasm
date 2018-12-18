@@ -19,4 +19,7 @@ const (
 	ErrFunctionTypeIndexOutOfRange = "Function type index out of range"
 
 	ErrReferenceTypeByte = "Invalid reference type byte"
+
+	ErrNotPtr = "Parameter isn't pointer"
+	ErrIntPtr = "Parameter must pointer of (u)int8 or (u)int16 or (u)int32 or (u)int64"
 )

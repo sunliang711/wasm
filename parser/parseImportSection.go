@@ -16,7 +16,8 @@ func (p *Parser) importSection(sec *Section) error {
 	}
 
 	rd := bytes.NewReader(sec.Data)
-	importSize, err := utils.DecodeUInt32(rd)
+	var importSize uint32
+	err = utils.DecodeVarInt(rd, 32, &importSize)
 	if err != nil {
 		return err
 	}
@@ -38,7 +39,6 @@ func (p *Parser) importSection(sec *Section) error {
 		}
 		utils.CheckUTF8(moduleName)
 		utils.CheckUTF8(exportName)
-		logrus.Infof("import section {moduleName: %s,exportName: %s}", moduleName, exportName)
 
 		//3. extern kind(1 byte,native value)
 		n, err := rd.Read(bufKind)
@@ -54,10 +54,13 @@ func (p *Parser) importSection(sec *Section) error {
 		switch kind {
 		case types.Function:
 			//function type index(of type section)
-			funcTypeIndex, err := utils.DecodeUInt32(rd)
+			var funcTypeIndex uint32
+			err := utils.DecodeVarInt(rd, 32, &funcTypeIndex)
 			if err != nil {
 				return err
 			}
+			//after type section parsed
+			<-p.typeParsed
 			if int(funcTypeIndex) >= len(p.Module.Types) {
 				return fmt.Errorf(types.ErrFunctionTypeIndexOutOfRange)
 			}
@@ -69,6 +72,7 @@ func (p *Parser) importSection(sec *Section) error {
 				},
 			}
 			p.Module.Functions.Imports = append(p.Module.Functions.Imports, imIndexFuncType)
+			logrus.Infof("<import section> type: function, function type: %v", imIndexFuncType)
 		case types.Table:
 			var (
 				tableType types.TableType
@@ -84,12 +88,14 @@ func (p *Parser) importSection(sec *Section) error {
 			if err != nil {
 				return err
 			}
-			p.Module.Tables.Imports = append(p.Module.Tables.Imports, types.ImportTableType{
+			imTableType := types.ImportTableType{
 				Type: tableType,
 				ImportCommon: types.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
-				}})
+				}}
+			p.Module.Tables.Imports = append(p.Module.Tables.Imports, imTableType)
+			logrus.Infof("<import section> type: table, table type: %v", imTableType)
 
 		case types.Memory:
 			var (
@@ -99,37 +105,42 @@ func (p *Parser) importSection(sec *Section) error {
 			if err != nil {
 				return err
 			}
-			p.Module.Memories.Imports = append(p.Module.Memories.Imports, types.ImportMemoryType{
+			imMemoryType := types.ImportMemoryType{
 				Type: memoryType,
 				ImportCommon: types.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
-				}})
+				}}
+			logrus.Infof("<import section> type: memory, memory type: %v", imMemoryType)
+			p.Module.Memories.Imports = append(p.Module.Memories.Imports, imMemoryType)
 
 		case types.Global:
 			var (
 				globalType types.GlobalType
 			)
 			// A. valueType
-			vType, err := types.DecodeValueType(rd)
+			vType, err := DecodeValueType(rd)
 			if err != nil {
 				return err
 			}
 			globalType.ValType = vType
 
 			//B. isMutable
-			isMutable, err := utils.DecodeU1(rd)
+			var isMutable byte
+			err = utils.DecodeVarInt(rd, 1, &isMutable)
 			if err != nil {
 				return err
 			}
-			globalType.IsMutable = (isMutable != 0)
+			globalType.IsMutable = isMutable != 0
 
-			p.Module.Globals.Imports = append(p.Module.Globals.Imports, types.ImportGlobalType{
+			imGlobalType := types.ImportGlobalType{
 				Type: globalType,
 				ImportCommon: types.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
-				}})
+				}}
+			logrus.Infof("<import section> type: global, global type: %v", imGlobalType)
+			p.Module.Globals.Imports = append(p.Module.Globals.Imports, imGlobalType)
 
 		case types.Exception:
 			var (
@@ -140,12 +151,14 @@ func (p *Parser) importSection(sec *Section) error {
 				return err
 			}
 
-			p.Module.ExceptionTypes.Imports = append(p.Module.ExceptionTypes.Imports, types.ImportExceptionType{
+			imExceptionType := types.ImportExceptionType{
 				Type: exceptionType,
 				ImportCommon: types.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
-				}})
+				}}
+			logrus.Infof("<import section> type: excetion, exception type: %v",imExceptionType)
+			p.Module.ExceptionTypes.Imports = append(p.Module.ExceptionTypes.Imports, imExceptionType)
 		}
 
 	}
@@ -176,21 +189,24 @@ func DecodeReferenceType(rd io.Reader) (types.RefType, error) {
 }
 
 func DecodeFlags(rd io.Reader) (bool, uint64, uint64, error) {
-	flags, err := utils.DecodeUInt32(rd)
+	var flags uint32
+	err := utils.DecodeVarInt(rd, 32, &flags)
 	if err != nil {
 		return false, 0, 0, err
 	}
-	isShared := (flags&0x02 != 0)
-	min, err := utils.DecodeUInt32(rd)
+	isShared := flags&0x02 != 0
+	var min uint32
+	err = utils.DecodeVarInt(rd, 32, &min)
 	if err != nil {
 		return false, 0, 0, err
 	}
 	var (
 		max uint64
 	)
-	hasMax := (flags&0x01 != 0)
+	hasMax := flags&0x01 != 0
 	if hasMax {
-		max, err = utils.DecodeUInt64(rd)
+		var max uint64
+		err = utils.DecodeVarInt(rd, 64, &max)
 		if err != nil {
 			return false, 0, 0, err
 		}

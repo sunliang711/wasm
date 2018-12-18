@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
 	"wasm/types"
@@ -13,6 +14,9 @@ var (
 )
 
 func (p *Parser) typeSection(sec *Section) error {
+	defer func() {
+		p.typeParsed <- struct{}{}
+	}()
 
 	err := checkSection(sec, types.OrderType)
 	if err != nil {
@@ -26,7 +30,8 @@ func (p *Parser) typeSection(sec *Section) error {
 	rd := bytes.NewReader(sec.Data)
 	// type section is an array
 	// get array size
-	size, err := utils.DecodeUInt32(rd)
+	var size uint32
+	err = utils.DecodeVarInt(rd, 32, &size)
 	if err != nil {
 		return err
 	}
@@ -53,7 +58,7 @@ func (p *Parser) typeSection(sec *Section) error {
 		functionType.Params = paramTuple
 		functionType.Results = resultTuple
 		p.Module.Types = append(p.Module.Types, functionType)
-		logrus.Infof("FunctionType: %v", functionType)
+		logrus.Infof("<type section> FunctionType: %v", functionType)
 	}
 	err = p.ValidateTypes()
 	return err
@@ -61,14 +66,15 @@ func (p *Parser) typeSection(sec *Section) error {
 
 func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 	// 1. count of params (or results)
-	n, err := utils.DecodeUInt32(rd)
+	var n uint32
+	err := utils.DecodeVarInt(rd, 32, &n)
 	if err != nil {
 		return nil
 	}
 	tuple.NumElems = n
 	// 2. params (or results) array
 	for i := 0; i < int(n); i++ {
-		valueType, err := types.DecodeValueType(rd)
+		valueType, err := DecodeValueType(rd)
 		if err != nil {
 			return err
 		}
@@ -80,4 +86,31 @@ func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 func (p *Parser) ValidateTypes() error {
 	logrus.Info("TODO: ValidateTypes()")
 	return nil
+}
+
+func DecodeValueType(rd io.Reader) (types.ValueType, error) {
+	var vType int8
+	err := utils.DecodeVarInt(rd, 8, &vType)
+	if err != nil {
+		return types.TypeNone, err
+	}
+
+	switch vType {
+	case -1:
+		return types.TypeI32, nil;
+	case -2:
+		return types.TypeI64, nil;
+	case -3:
+		return types.TypeF32, nil;
+	case -4:
+		return types.TypeF64, nil;
+	case -5:
+		return types.TypeV128, nil;
+	case -16:
+		return types.TypeAnyFunc, nil;
+	case -17:
+		return types.TypeAnyRef, nil;
+	default:
+		return types.TypeNone, fmt.Errorf(types.ErrInvalidValueType)
+	}
 }

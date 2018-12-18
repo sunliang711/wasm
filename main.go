@@ -5,8 +5,6 @@ import (
 	"wasm/parser"
 )
 
-
-
 func main() {
 	inputfile := "helloworld.wasm"
 	//rdr ,err:= parser.LoadBinary(inputfile)
