@@ -27,6 +27,7 @@ func (p *Parser) startSection(sec *Section) error {
 	return err
 }
 func (p *Parser) validateStart() error {
+	//TODO
 	logrus.Info("TODO: validateStart()")
 	return nil
 }

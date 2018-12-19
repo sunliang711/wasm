@@ -86,6 +86,7 @@ func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 }
 
 func (p *Parser) ValidateTypes() error {
+	//TODO
 	logrus.Info("TODO: ValidateTypes()")
 	return nil
 }

@@ -58,6 +58,7 @@ func (p *Parser) exportSection(sec *Section) error {
 }
 
 func (p *Parser) validateExport() error {
+	//TODO
 	logrus.Info("TODO: validateExport()")
 	return nil
 }

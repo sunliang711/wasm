@@ -41,6 +41,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 	return err
 }
 func (p *Parser) validateFunctionDeclarations() error {
+	//TODO
 	logrus.Info("TODO: validateFunctionDeclarations()")
 	return nil
 }

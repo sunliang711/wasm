@@ -37,6 +37,7 @@ func (p *Parser) memorySection(sec *Section) error {
 }
 
 func (p *Parser) validateMemory() error {
+	//TODO
 	logrus.Info("TODO: validateMemory()")
 	return nil
 }

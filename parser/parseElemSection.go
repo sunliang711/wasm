@@ -67,6 +67,7 @@ func (p *Parser) elemSection(sec *Section) error {
 }
 
 func (p *Parser) validateElem() error {
+	//TODO
 	logrus.Info("TODO: validateElem()")
 	return nil
 }

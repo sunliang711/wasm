@@ -32,4 +32,6 @@ const (
 	ErrInvalidFloat64Format = "Invalid float64 format"
 
 	ErrInvalidParameter = "Invalid parameter"
+
+	ErrNotUTF8String = "Not utf8 string"
 )

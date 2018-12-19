@@ -40,6 +40,7 @@ func (p *Parser) globalSection(sec *Section) error {
 }
 
 func (p *Parser) validateGlobal() error {
+	//TODO
 	logrus.Info("TODO: validateGlobal()")
 	return nil
 }

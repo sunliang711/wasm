@@ -2,8 +2,8 @@ package utils
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
+	"unicode/utf8"
 	"wasm/types"
 )
 
@@ -30,8 +30,12 @@ func ReadVarChars(rd io.Reader) (int, []byte, error) {
 }
 
 func CheckUTF8(src []byte) error {
-	logrus.Info("TODO: CheckUTF8()")
-	return nil
+	valid := utf8.Valid(src)
+	if valid {
+		return nil
+	} else {
+		return fmt.Errorf(types.ErrNotUTF8String)
+	}
 }
 
 func ReadByte(rd io.Reader) (byte, error) {

@@ -34,6 +34,7 @@ func (p *Parser) tableSection(sec *Section) error {
 	return err
 }
 func (p *Parser) validateTable() error {
+	//TODO
 	logrus.Info("TODO: validateTable()")
 	return nil
 }

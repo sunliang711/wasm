@@ -236,6 +236,29 @@ func (e Export) String() string {
 
 type InitializerType uint16
 
+func (i InitializerType) String() string {
+	switch i {
+	case I32_const:
+		return fmt.Sprintf("InitializerType: I32_const")
+	case I64_const:
+		return fmt.Sprintf("InitializerType: I64_const")
+	case F32_const:
+		return fmt.Sprintf("InitializerType: F32_const")
+	case F64_const:
+		return fmt.Sprintf("InitializerType: F64_const")
+	case V128_const:
+		return fmt.Sprintf("InitializerType: V128_const")
+	case Get_global:
+		return fmt.Sprintf("InitializerType: Get_global")
+	case Ref_null:
+		return fmt.Sprintf("InitializerType: Ref_null")
+	case Error:
+		return fmt.Sprintf("InitializerType: Error")
+	default:
+		return fmt.Sprintf("Unknown InitializerType")
+	}
+}
+
 const (
 	I32_const  InitializerType = 0x0041
 	I64_const  InitializerType = 0x0042
@@ -257,11 +280,21 @@ type InitializerExpression struct {
 	GlobalRef uint64
 }
 
+func (i InitializerExpression) String() string {
+	return fmt.Sprintf("{Type: %v,I32: %v,I64: %v,F32: %v,F64: %v,V128: %v,GlobalRef: %v}",
+		i.Type, i.I32, i.I64, i.F32, i.F64, i.V128, i.GlobalRef)
+}
+
 type DataSegment struct {
 	IsActive    bool
 	MemoryIndex uint64
 	BaseOffset  *InitializerExpression
 	Data        []byte
+}
+
+func (d DataSegment) String() string {
+	return fmt.Sprintf("{IsActive: %v,MemoryIndex: %d,BaseOffset: %v,Data: %v}", d.IsActive,
+		d.MemoryIndex, d.BaseOffset, d.Data)
 }
 
 type ElemSegment struct {
@@ -271,13 +304,22 @@ type ElemSegment struct {
 	Indices    []uint64
 }
 
+func (e ElemSegment) String() string {
+	return fmt.Sprintf("{IsActive: %v,TableIndex: %v,BaseOffset: %v,Indices: %v}", e.IsActive,
+		e.TableIndex, e.BaseOffset, e.Indices)
+}
+
 type UserSection struct {
 	Name string
 	Data []byte
 }
 
+func (u UserSection) String() string {
+	return fmt.Sprintf("{Name: %s, Data: %v}", u.Name, u.Data)
+}
+
 type FeatureSpec struct {
-	//TODO // go : field of struct is false
+	//TODO // go : field of struct is false ,solution: always use NewFeatureSpec() to generate new obj
 	//// A feature flag for the MVP, just so the MVP operators can reference it as the required
 	//// feature flag.
 	//bool mvp = true;
@@ -304,4 +346,9 @@ type FeatureSpec struct {
 	//
 	//Uptr maxLocals = 65536;
 	//Uptr maxLabelsPerFunction = UINTPTR_MAX;
+}
+
+func NewFeatureSepc() *FeatureSpec {
+	//TODO
+	return &FeatureSpec{}
 }

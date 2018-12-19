@@ -40,6 +40,7 @@ func (p *Parser) exceptionTypesSection(sec *Section) error {
 }
 
 func (p *Parser) validateExceptionTypes() error {
+	//TODO
 	logrus.Info("TODO: validateExceptionTypes()")
 	return nil
 }
