@@ -54,7 +54,7 @@ func New(filename string) (*Parser, error) {
 		Wg:         new(sync.WaitGroup),
 		Module:     new(types.Module),
 		Closed:     false,
-		typeParsed: make(chan struct{}, 1),
+		typeParsed: make(chan struct{}, 2),
 	}, nil
 }
 

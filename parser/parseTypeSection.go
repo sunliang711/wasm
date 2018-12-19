@@ -15,6 +15,8 @@ var (
 
 func (p *Parser) typeSection(sec *Section) error {
 	defer func() {
+		//notify import and functionDeclaration sections
+		p.typeParsed <- struct{}{}
 		p.typeParsed <- struct{}{}
 	}()
 
@@ -58,7 +60,7 @@ func (p *Parser) typeSection(sec *Section) error {
 		functionType.Params = paramTuple
 		functionType.Results = resultTuple
 		p.Module.Types = append(p.Module.Types, functionType)
-		logrus.Infof("<type section> FunctionType: %v", functionType)
+		logrus.Infof("<type section> FunctionType: %v,index: %d", functionType, index)
 	}
 	err = p.ValidateTypes()
 	return err
@@ -90,7 +92,7 @@ func (p *Parser) ValidateTypes() error {
 
 func DecodeValueType(rd io.Reader) (types.ValueType, error) {
 	var vType int8
-	err := utils.DecodeVarInt(rd, 8, &vType)
+	err := utils.DecodeVarInt(rd, 7, &vType)
 	if err != nil {
 		return types.TypeNone, err
 	}

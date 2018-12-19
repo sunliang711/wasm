@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"io"
 	"wasm/types"
 	"wasm/utils"
 )
@@ -74,17 +73,7 @@ func (p *Parser) importSection(sec *Section) error {
 			p.Module.Functions.Imports = append(p.Module.Functions.Imports, imIndexFuncType)
 			logrus.Infof("<import section> type: function, function type: %v", imIndexFuncType)
 		case types.Table:
-			var (
-				tableType types.TableType
-			)
-			// A: ReferenceType (1 byte)
-			refType, err := DecodeReferenceType(rd)
-			if err != nil {
-				return err
-			}
-			tableType.ElementType = refType
-			//// B: flags
-			tableType.IsShared, tableType.Size.Min, tableType.Size.Max, err = DecodeFlags(rd)
+			tableType, err := DecodeTableType(rd)
 			if err != nil {
 				return err
 			}
@@ -115,24 +104,10 @@ func (p *Parser) importSection(sec *Section) error {
 			p.Module.Memories.Imports = append(p.Module.Memories.Imports, imMemoryType)
 
 		case types.Global:
-			var (
-				globalType types.GlobalType
-			)
-			// A. valueType
-			vType, err := DecodeValueType(rd)
+			globalType, err := DecodeGlobalType(rd)
 			if err != nil {
 				return err
 			}
-			globalType.ValType = vType
-
-			//B. isMutable
-			var isMutable byte
-			err = utils.DecodeVarInt(rd, 1, &isMutable)
-			if err != nil {
-				return err
-			}
-			globalType.IsMutable = isMutable != 0
-
 			imGlobalType := types.ImportGlobalType{
 				Type: globalType,
 				ImportCommon: types.ImportCommon{
@@ -157,7 +132,7 @@ func (p *Parser) importSection(sec *Section) error {
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				}}
-			logrus.Infof("<import section> type: excetion, exception type: %v",imExceptionType)
+			logrus.Infof("<import section> type: excetion, exception type: %v", imExceptionType)
 			p.Module.ExceptionTypes.Imports = append(p.Module.ExceptionTypes.Imports, imExceptionType)
 		}
 
@@ -172,46 +147,3 @@ func (p *Parser) validateImport() error {
 	return nil
 }
 
-func DecodeReferenceType(rd io.Reader) (types.RefType, error) {
-	buf := make([]byte, 1)
-	_, err := rd.Read(buf)
-	if err != nil {
-		return types.RTInvalid, err
-	}
-	switch buf[0] {
-	case 0x70:
-		return types.RTAnyFunc, nil
-	case 0x6f:
-		return types.RTAnyRef, nil
-	default:
-		return types.RTInvalid, fmt.Errorf(types.ErrReferenceTypeByte)
-	}
-}
-
-func DecodeFlags(rd io.Reader) (bool, uint64, uint64, error) {
-	var flags uint32
-	err := utils.DecodeVarInt(rd, 32, &flags)
-	if err != nil {
-		return false, 0, 0, err
-	}
-	isShared := flags&0x02 != 0
-	var min uint32
-	err = utils.DecodeVarInt(rd, 32, &min)
-	if err != nil {
-		return false, 0, 0, err
-	}
-	var (
-		max uint64
-	)
-	hasMax := flags&0x01 != 0
-	if hasMax {
-		var max uint64
-		err = utils.DecodeVarInt(rd, 64, &max)
-		if err != nil {
-			return false, 0, 0, err
-		}
-	} else {
-		max = types.UINT64_MAX
-	}
-	return isShared, uint64(min), max, nil
-}

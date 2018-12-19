@@ -160,21 +160,42 @@ type FunctionDef struct {
 	BranchTables           [][]uint64
 }
 
+func (f FunctionDef) String() string {
+	return fmt.Sprintf("{Type: %v, NonParameterLocalTypes: %v,Code: %v,BranchTable: %v}",
+		f.Type, f.NonParameterLocalTypes, f.Code, f.BranchTables)
+}
+
 type TableDef struct {
 	Type TableType
+}
+
+func (t TableDef) String() string {
+	return fmt.Sprintf("{Type: %v}", t.Type)
 }
 
 type MemoryDef struct {
 	Type MemoryType
 }
 
+func (m MemoryDef) String() string {
+	return fmt.Sprintf("{Type: %v}", m.Type)
+}
+
 type GlobalDef struct {
-	Type GlobalType
-	//TODO: InitializerExpression initializer;
+	Type        GlobalType
+	Initializer *InitializerExpression
+}
+
+func (g GlobalDef) String() string {
+	return fmt.Sprintf("{Type: %v}", g.Type)
 }
 
 type ExceptionTypeDef struct {
 	Type ExceptionType
+}
+
+func (e ExceptionTypeDef) String() string {
+	return fmt.Sprintf("{Type: %v}", e.Type)
 }
 
 //}}basicDef END
@@ -209,18 +230,45 @@ type Export struct {
 	Index uint64
 }
 
+func (e Export) String() string {
+	return fmt.Sprintf("{Name: %s, Kind: %s,Index: %d}", e.Name, e.Kind, e.Index)
+}
+
+type InitializerType uint16
+
+const (
+	I32_const  InitializerType = 0x0041
+	I64_const  InitializerType = 0x0042
+	F32_const  InitializerType = 0x0043
+	F64_const  InitializerType = 0x0044
+	V128_const InitializerType = 0xfd00
+	Get_global InitializerType = 0x0023
+	Ref_null   InitializerType = 0x00d0
+	Error      InitializerType = 0xffff
+)
+
+type InitializerExpression struct {
+	Type      InitializerType
+	I32       int32
+	I64       int64
+	F32       float32
+	F64       float64
+	V128      [16]byte
+	GlobalRef uint64
+}
+
 type DataSegment struct {
 	IsActive    bool
 	MemoryIndex uint64
-	//TODO InitializerExpression baseOffset;
-	Data []byte
+	BaseOffset  *InitializerExpression
+	Data        []byte
 }
 
 type ElemSegment struct {
 	IsActive   bool
 	TableIndex uint64
-	//TODO InitializerExpression baseOffset;
-	Indices []uint64
+	BaseOffset *InitializerExpression
+	Indices    []uint64
 }
 
 type UserSection struct {
