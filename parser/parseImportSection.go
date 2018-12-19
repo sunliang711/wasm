@@ -146,4 +146,3 @@ func (p *Parser) validateImport() error {
 	logrus.Info("TODO: validateImport()")
 	return nil
 }
-

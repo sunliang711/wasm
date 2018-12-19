@@ -42,7 +42,7 @@ func DecodeInt32(rd io.Reader) (int32, error) {
 	numBytes := 0
 	bytes := make([]byte, maxBytes)
 
-	signExtendShift := 32;
+	signExtendShift := 32
 	for numBytes < maxBytes {
 		_, err := rd.Read(buf)
 		if err != nil {
@@ -149,7 +149,7 @@ func DecodeVarInt(rd io.Reader, maxBits int, value interface{}) error {
 	default:
 		return fmt.Errorf(types.ErrIntPtr)
 	}
-	numBytes := 0;
+	numBytes := 0
 	buf := make([]byte, 1)
 	for numBytes < maxBytes {
 		_, err := rd.Read(buf)

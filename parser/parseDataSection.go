@@ -1,7 +1,6 @@
 package parser
 
-
-import(
+import (
 	"github.com/sirupsen/logrus"
 )
 

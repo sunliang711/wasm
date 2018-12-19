@@ -99,19 +99,19 @@ func DecodeValueType(rd io.Reader) (types.ValueType, error) {
 
 	switch vType {
 	case -1:
-		return types.TypeI32, nil;
+		return types.TypeI32, nil
 	case -2:
-		return types.TypeI64, nil;
+		return types.TypeI64, nil
 	case -3:
-		return types.TypeF32, nil;
+		return types.TypeF32, nil
 	case -4:
-		return types.TypeF64, nil;
+		return types.TypeF64, nil
 	case -5:
-		return types.TypeV128, nil;
+		return types.TypeV128, nil
 	case -16:
-		return types.TypeAnyFunc, nil;
+		return types.TypeAnyFunc, nil
 	case -17:
-		return types.TypeAnyRef, nil;
+		return types.TypeAnyRef, nil
 	default:
 		return types.TypeNone, fmt.Errorf(types.ErrInvalidValueType)
 	}

@@ -1,9 +1,9 @@
 package types
 
 type Module struct {
-	FeatureSpec        FeatureSpec
+	FeatureSpec FeatureSpec
 
-	Types              []FunctionType
+	Types []FunctionType
 
 	Functions      IndexSpaceFunction
 	Tables         IndexSpaceTable

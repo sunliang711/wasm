@@ -34,7 +34,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 		}
 		funcDef := types.FunctionDef{Type: types.IndexedFunctionType{uint64(funcTypeIndex)}}
 		p.Module.Functions.Defs = append(p.Module.Functions.Defs, funcDef)
-		logrus.Infof("<function Declaration section> function def: %v",funcDef)
+		logrus.Infof("<function Declaration section> function def: %v", funcDef)
 	}
 
 	err = p.validateFunctionDeclarations()

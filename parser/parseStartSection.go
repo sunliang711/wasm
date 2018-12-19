@@ -21,7 +21,7 @@ func (p *Parser) startSection(sec *Section) error {
 	}
 	p.Module.StartFunctionIndex = int(startIndex)
 
-	logrus.Infof("<start section> start function index: %d",startIndex)
+	logrus.Infof("<start section> start function index: %d", startIndex)
 
 	err = p.validateStart()
 	return err
