@@ -16,7 +16,7 @@ func (p *Parser) exportSection(sec *Section) error {
 
 	//1. num export
 	var numExport uint32
-	err = utils.DecodeVarInt(rd, 32, &numExport)
+	_, err = utils.DecodeVarInt(rd, 32, &numExport)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (p *Parser) exportSection(sec *Section) error {
 	//2. exports
 	for i := 0; i < int(numExport); i++ {
 		//name
-		name, err := utils.ReadVarChars(rd)
+		_, name, err := utils.ReadVarChars(rd)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ func (p *Parser) exportSection(sec *Section) error {
 
 		//index
 		var index uint32
-		err = utils.DecodeVarInt(rd, 32, &index)
+		_, err = utils.DecodeVarInt(rd, 32, &index)
 		if err != nil {
 			return err
 		}

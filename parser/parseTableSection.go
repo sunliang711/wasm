@@ -16,7 +16,7 @@ func (p *Parser) tableSection(sec *Section) error {
 	rd := bytes.NewReader(sec.Data)
 	//1. num tab ele
 	var numTabEle uint32
-	err = utils.DecodeVarInt(rd, 32, &numTabEle)
+	_, err = utils.DecodeVarInt(rd, 32, &numTabEle)
 	if err != nil {
 		return err
 	}

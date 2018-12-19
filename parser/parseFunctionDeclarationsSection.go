@@ -16,7 +16,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 	rd := bytes.NewReader(sec.Data)
 	//1. num functions
 	var numFun uint32
-	err = utils.DecodeVarInt(rd, 32, &numFun)
+	_, err = utils.DecodeVarInt(rd, 32, &numFun)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 	var funcTypeIndex uint32
 	//2. function type index
 	for i := 0; i < int(numFun); i++ {
-		err = utils.DecodeVarInt(rd, 32, &funcTypeIndex)
+		_, err = utils.DecodeVarInt(rd, 32, &funcTypeIndex)
 		if err != nil {
 			return err
 		}

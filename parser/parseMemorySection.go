@@ -16,7 +16,7 @@ func (p *Parser) memorySection(sec *Section) error {
 
 	// 1. num memory ele
 	var numMemory uint32
-	err = utils.DecodeVarInt(rd, 32, &numMemory)
+	_, err = utils.DecodeVarInt(rd, 32, &numMemory)
 	if err != nil {
 		return err
 	}

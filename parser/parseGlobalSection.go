@@ -16,7 +16,7 @@ func (p *Parser) globalSection(sec *Section) error {
 
 	//1. num global ele
 	var numGlobal uint32
-	err = utils.DecodeVarInt(rd, 32, &numGlobal)
+	_, err = utils.DecodeVarInt(rd, 32, &numGlobal)
 	if err != nil {
 		return err
 	}

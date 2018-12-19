@@ -16,7 +16,7 @@ func (p *Parser) exceptionTypesSection(sec *Section) error {
 
 	//1. num exceptionType
 	var numExcep uint32
-	err = utils.DecodeVarInt(rd, 32, &numExcep)
+	_, err = utils.DecodeVarInt(rd, 32, &numExcep)
 	if err != nil {
 		return err
 	}

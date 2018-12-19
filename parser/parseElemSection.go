@@ -17,7 +17,7 @@ func (p *Parser) elemSection(sec *Section) error {
 
 	//1. num ele
 	var numEle uint32
-	err = utils.DecodeVarInt(rd, 32, &numEle)
+	_, err = utils.DecodeVarInt(rd, 32, &numEle)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (p *Parser) elemSection(sec *Section) error {
 		case 2:
 			eleSeg.IsActive = true
 			var tabIndex uint32
-			err = utils.DecodeVarInt(rd, 32, &tabIndex)
+			_, err = utils.DecodeVarInt(rd, 32, &tabIndex)
 			if err != nil {
 				return err
 			}
@@ -58,6 +58,8 @@ func (p *Parser) elemSection(sec *Section) error {
 		default:
 			return fmt.Errorf(types.ErrInvalidElemFlags)
 		}
+		p.Module.ElemSegments = append(p.Module.ElemSegments, eleSeg)
+		logrus.Infof("<elem section> element segment: %v", eleSeg)
 	}
 
 	err = p.validateElem()

@@ -33,7 +33,7 @@ func (p *Parser) typeSection(sec *Section) error {
 	// type section is an array
 	// get array size
 	var size uint32
-	err = utils.DecodeVarInt(rd, 32, &size)
+	_, err = utils.DecodeVarInt(rd, 32, &size)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (p *Parser) typeSection(sec *Section) error {
 		functionType.Params = paramTuple
 		functionType.Results = resultTuple
 		p.Module.Types = append(p.Module.Types, functionType)
-		logrus.Infof("<type section> FunctionType: %v,index: %d", functionType, index)
+		logrus.Infof("<type section>index: %d, FunctionType: %v", index, functionType)
 	}
 	err = p.ValidateTypes()
 	return err
@@ -69,7 +69,7 @@ func (p *Parser) typeSection(sec *Section) error {
 func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 	// 1. count of params (or results)
 	var n uint32
-	err := utils.DecodeVarInt(rd, 32, &n)
+	_, err := utils.DecodeVarInt(rd, 32, &n)
 	if err != nil {
 		return nil
 	}
@@ -92,7 +92,7 @@ func (p *Parser) ValidateTypes() error {
 
 func DecodeValueType(rd io.Reader) (types.ValueType, error) {
 	var vType int8
-	err := utils.DecodeVarInt(rd, 7, &vType)
+	_, err := utils.DecodeVarInt(rd, 7, &vType)
 	if err != nil {
 		return types.TypeNone, err
 	}

@@ -122,14 +122,15 @@ func DecodeU1(rd io.Reader) (byte, error) {
 	return result, nil
 }
 
-func DecodeVarInt(rd io.Reader, maxBits int, value interface{}) error {
+func DecodeVarInt(rd io.Reader, maxBits int, value interface{}) (int, error) {
 	maxBytes := (maxBits + 6) / 7
 	bytes := make([]byte, maxBytes)
+	numBytes := 0
 
 	signExtendShift := 0
 	rv := reflect.ValueOf(value)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
-		return fmt.Errorf(types.ErrNotPtr)
+		return numBytes, fmt.Errorf(types.ErrNotPtr)
 	}
 	isSign := false
 	switch rv.Elem().Kind() {
@@ -147,14 +148,13 @@ func DecodeVarInt(rd io.Reader, maxBits int, value interface{}) error {
 		isSign = true
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 	default:
-		return fmt.Errorf(types.ErrIntPtr)
+		return numBytes, fmt.Errorf(types.ErrIntPtr)
 	}
-	numBytes := 0
 	buf := make([]byte, 1)
 	for numBytes < maxBytes {
 		_, err := rd.Read(buf)
 		if err != nil {
-			return err
+			return numBytes, err
 		}
 		byt := buf[0]
 		bytes[numBytes] = byt
@@ -203,7 +203,7 @@ func DecodeVarInt(rd io.Reader, maxBits int, value interface{}) error {
 		}
 		rv.Elem().SetUint(result)
 	}
-	return nil
+	return numBytes, nil
 	//I8 signExtendShift = (I8)sizeof(Value) * 8;
 	//while(numBytes < maxBytes)
 	//{

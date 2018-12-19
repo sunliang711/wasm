@@ -24,13 +24,13 @@ func DecodeReferenceType(rd io.Reader) (types.RefType, error) {
 
 func DecodeFlags(rd io.Reader) (bool, uint64, uint64, error) {
 	var flags uint32
-	err := utils.DecodeVarInt(rd, 32, &flags)
+	_, err := utils.DecodeVarInt(rd, 32, &flags)
 	if err != nil {
 		return false, 0, 0, err
 	}
 	isShared := flags&0x02 != 0
 	var min uint32
-	err = utils.DecodeVarInt(rd, 32, &min)
+	_, err = utils.DecodeVarInt(rd, 32, &min)
 	if err != nil {
 		return false, 0, 0, err
 	}
@@ -40,7 +40,7 @@ func DecodeFlags(rd io.Reader) (bool, uint64, uint64, error) {
 	hasMax := flags&0x01 != 0
 	if hasMax {
 		var max uint64
-		err = utils.DecodeVarInt(rd, 64, &max)
+		_, err = utils.DecodeVarInt(rd, 64, &max)
 		if err != nil {
 			return false, 0, 0, err
 		}
@@ -76,7 +76,7 @@ func DecodeGlobalType(rd io.Reader) (types.GlobalType, error) {
 
 	//B. isMutable
 	var isMutable byte
-	err = utils.DecodeVarInt(rd, 1, &isMutable)
+	_, err = utils.DecodeVarInt(rd, 1, &isMutable)
 	if err != nil {
 		return types.GlobalType{}, err
 	}
@@ -98,12 +98,12 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 	//2. switch initializer
 	switch initExpression.Type {
 	case types.I32_const:
-		err = utils.DecodeVarInt(rd, 32, &initExpression.I32)
+		_, err = utils.DecodeVarInt(rd, 32, &initExpression.I32)
 		if err != nil {
 			return initExpression, err
 		}
 	case types.I64_const:
-		err = utils.DecodeVarInt(rd, 64, &initExpression.I64)
+		_, err = utils.DecodeVarInt(rd, 64, &initExpression.I64)
 		if err != nil {
 			return initExpression, err
 		}
@@ -135,7 +135,7 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 		copy(initExpression.V128[:], v128Bytes[:])
 	case types.Get_global:
 		var gref uint32
-		err := utils.DecodeVarInt(rd, 32, &gref)
+		_, err := utils.DecodeVarInt(rd, 32, &gref)
 		if err != nil {
 			return initExpression, err
 		}

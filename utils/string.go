@@ -11,22 +11,22 @@ const (
 	ErrInsufficientChar = "Cannot read enough characters from reader"
 )
 
-func ReadVarChars(rd io.Reader) ([]byte, error) {
+func ReadVarChars(rd io.Reader) (int, []byte, error) {
 	var numChar uint32
-	err := DecodeVarInt(rd, 32, &numChar)
+	num, err := DecodeVarInt(rd, 32, &numChar)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	chars := make([]byte, numChar)
 	n, err := rd.Read(chars)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	if n != int(numChar) {
-		return nil, fmt.Errorf(ErrInsufficientChar)
+		return 0, nil, fmt.Errorf(ErrInsufficientChar)
 	}
-	return chars, nil
+	return num + int(numChar), chars, nil
 }
 
 func CheckUTF8(src []byte) error {

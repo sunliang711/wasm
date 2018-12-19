@@ -114,7 +114,7 @@ func (p *Parser) fileLoop() {
 		}
 		// get section num bytes
 		var sectionNumBytes uint32
-		err = utils.DecodeVarInt(p.Stream, 32, &sectionNumBytes)
+		_, err = utils.DecodeVarInt(p.Stream, 32, &sectionNumBytes)
 		if err != nil {
 			p.NotifyError(err)
 			break

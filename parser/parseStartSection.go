@@ -15,7 +15,7 @@ func (p *Parser) startSection(sec *Section) error {
 	rd := bytes.NewReader(sec.Data)
 
 	var startIndex uint32
-	err = utils.DecodeVarInt(rd, 32, &startIndex)
+	_, err = utils.DecodeVarInt(rd, 32, &startIndex)
 	if err != nil {
 		return err
 	}

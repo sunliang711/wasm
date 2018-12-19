@@ -16,7 +16,7 @@ func (p *Parser) importSection(sec *Section) error {
 
 	rd := bytes.NewReader(sec.Data)
 	var importSize uint32
-	err = utils.DecodeVarInt(rd, 32, &importSize)
+	_, err = utils.DecodeVarInt(rd, 32, &importSize)
 	if err != nil {
 		return err
 	}
@@ -25,14 +25,14 @@ func (p *Parser) importSection(sec *Section) error {
 		//1. module name
 		// 1.1 num char
 		// 1.2 chars
-		moduleName, err := utils.ReadVarChars(rd)
+		_, moduleName, err := utils.ReadVarChars(rd)
 		if err != nil {
 			return err
 		}
 		//2. export name
 		// 2.1 num char
 		// 2.2 chars
-		exportName, err := utils.ReadVarChars(rd)
+		_, exportName, err := utils.ReadVarChars(rd)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ func (p *Parser) importSection(sec *Section) error {
 		case types.Function:
 			//function type index(of type section)
 			var funcTypeIndex uint32
-			err := utils.DecodeVarInt(rd, 32, &funcTypeIndex)
+			_, err := utils.DecodeVarInt(rd, 32, &funcTypeIndex)
 			if err != nil {
 				return err
 			}
