@@ -26,7 +26,10 @@ type Parser struct {
 	Module    *types.Module
 	Closed    bool
 
-	typeParsed chan struct{}
+	*types.DeferredCodeValidationState
+
+	typeParsed            chan struct{}
+	funcDeclarationParsed chan struct{}
 }
 
 type Section struct {
@@ -39,22 +42,24 @@ func (sec Section) String() string {
 	return fmt.Sprintf("{Type: %d,NumSectionBytes: %d,Data: %v}", sec.Type, sec.NumSectionBytes, sec.Data)
 }
 
-func New(filename string) (*Parser, error) {
+func NewParser(filename string) (*Parser, error) {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Parser{
-		Stream:     bytes.NewReader(content),
-		ChSection:  make(chan *Section),
-		ChErr:      make(chan error),
-		ChQuit:     make(chan struct{}),
-		ChDone:     make(chan struct{}),
-		Wg:         new(sync.WaitGroup),
-		Module:     new(types.Module),
-		Closed:     false,
-		typeParsed: make(chan struct{}, 2),
+		Stream:                      bytes.NewReader(content),
+		ChSection:                   make(chan *Section),
+		ChErr:                       make(chan error),
+		ChQuit:                      make(chan struct{}),
+		ChDone:                      make(chan struct{}),
+		Wg:                          new(sync.WaitGroup),
+		Module:                      types.NewModule(),
+		Closed:                      false,
+		typeParsed:                  make(chan struct{}, 2),
+		funcDeclarationParsed:       make(chan struct{}, 1),
+		DeferredCodeValidationState: new(types.DeferredCodeValidationState),
 	}, nil
 }
 
@@ -164,6 +169,8 @@ func (p *Parser) eventLoop() error {
 		case <-p.ChDone:
 			p.Wg.Wait()
 			logrus.Infof("Parse done.")
+			//TODO
+			//p.validateDataSegments()
 			return nil
 		}
 	}

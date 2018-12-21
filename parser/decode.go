@@ -132,7 +132,7 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 		if err != nil {
 			return initExpression, err
 		}
-		copy(initExpression.V128[:], v128Bytes[:])
+		copy(initExpression.V128[:], v128Bytes)
 	case types.Get_global:
 		var gref uint32
 		_, err := utils.DecodeVarInt(rd, 32, &gref)
@@ -157,7 +157,7 @@ func DecodeOpcode(rd io.Reader) (int16, error) {
 		return 0, err
 	}
 	opcode = int16(byte0)
-	if opcode > int16(types.MaxSingleByteOpcode) {
+	if opcode > int16(types.OPCMaxSingleByteOpcode) {
 		byte1, err := utils.ReadByte(rd)
 		if err != nil {
 			return 0, err
@@ -166,4 +166,27 @@ func DecodeOpcode(rd io.Reader) (int16, error) {
 		opcode = opcode | int16(byte1)
 	}
 	return opcode, nil
+}
+
+func DecodeLocalSet(rd io.Reader, ls *types.LocalSet) (int, error) {
+	if ls == nil {
+		return 0, fmt.Errorf(types.ErrInvalidParameter)
+	}
+	var num uint32
+	// n bytes
+	n, err := utils.DecodeVarInt(rd, 32, &num)
+	if err != nil {
+		return 0, err
+	}
+	ls.Num = uint64(num)
+
+	// 1 byte
+	vType, err := DecodeValueType(rd)
+	if err != nil {
+		return 0, err
+	}
+	ls.Type = vType
+
+	//used n + 1 bytes in total
+	return n + 1, nil
 }

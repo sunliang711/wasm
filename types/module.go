@@ -1,7 +1,7 @@
 package types
 
 type Module struct {
-	FeatureSpec FeatureSpec
+	FeatureSpec *FeatureSpec
 
 	Types []FunctionType
 
@@ -22,4 +22,10 @@ type Module struct {
 func (m Module) String() string {
 	//TODO
 	return "TODO Module::String()"
+}
+
+func NewModule() *Module {
+	return &Module{
+		FeatureSpec: NewFeatureSepc(),
+	}
 }

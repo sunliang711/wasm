@@ -33,7 +33,7 @@ func main() {
 	//	fmt.Println("Read ",n," bytes")
 	//}
 	//fmt.Println("counts: ",counts)
-	parser, err := parser.New(inputfile)
+	parser, err := parser.NewParser(inputfile)
 	if err != nil {
 		panic(err)
 	}

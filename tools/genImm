@@ -1,0 +1,21 @@
+#!/bin/bash
+
+tmpfile=tmp
+sed -n '/visitOp(0x0002/,$p' OperatorTable.h > $tmpfile
+
+sed  's/^[[:blank:]]*$//g' $tmpfile >$tmpfile.0
+
+# awk -F',' '{print "visit_imm("$4") \\"}' $tmpfile.0 >$tmpfile.1
+awk -F',' '{if ($4!="") {print "visit_imm("$4") \\"}}' $tmpfile.0 >$tmpfile.1
+
+sort $tmpfile.1 | uniq > $tmpfile.2
+
+sed -n 's/ //gp' $tmpfile.2 > $tmpfile.3
+
+
+(echo '#define enum_imms(visit_imm) \'; cat $tmpfile.3) > $tmpfile.4
+
+sed '$s|\\||' $tmpfile.4 > imm.h
+
+
+rm -rf $tmpfile{,.1,.2,.3,.4}

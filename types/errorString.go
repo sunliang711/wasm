@@ -34,4 +34,8 @@ const (
 	ErrInvalidParameter = "Invalid parameter"
 
 	ErrNotUTF8String = "Not utf8 string"
+
+	ErrFuncDeclarationDefinitionMismatch = "Function declaration doesn't match definition"
+
+	ErrTooManyLocals = "Too many locals"
 )

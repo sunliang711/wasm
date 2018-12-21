@@ -318,37 +318,72 @@ func (u UserSection) String() string {
 	return fmt.Sprintf("{Name: %s, Data: %v}", u.Name, u.Data)
 }
 
+type DeferredCodeValidationState struct {
+	RequiredNumDataSegments uint64
+}
+
+func (d DeferredCodeValidationState) String() string {
+	return fmt.Sprintf("{RequiredNumDataSegments: %d}", d.RequiredNumDataSegments)
+}
+
+type LocalSet struct {
+	Num  uint64
+	Type ValueType
+}
+
+func (l LocalSet) String() string {
+	return fmt.Sprintf("{Num: %d,Type: %v}", l.Num, l.Type)
+}
+
 type FeatureSpec struct {
-	//TODO // go : field of struct is false ,solution: always use NewFeatureSpec() to generate new obj
 	//// A feature flag for the MVP, just so the MVP operators can reference it as the required
 	//// feature flag.
-	//bool mvp = true;
+	MVP bool
 	//
 	//// Proposed standard extensions
-	//bool importExportMutableGlobals = true;
-	//bool extendedNamesSection = true;
-	//bool simd = true;
-	//bool atomics = true;
-	//bool exceptionHandling = true;
-	//bool nonTrappingFloatToInt = true;
-	//bool extendedSignExtension = true;
-	//bool multipleResultsAndBlockParams = true;
-	//bool bulkMemoryOperations = true;
-	//bool referenceTypes = true;
-	//bool quotedNamesInTextFormat = true; // Enabled by default for everything but wavm-disas,
+	ImportExportMutableGlobals    bool
+	ExtendedNamesSection          bool
+	Simd                          bool
+	Atomics                       bool
+	ExceptionHandling             bool
+	NonTrappingFloatToInt         bool
+	ExtendedSignExtension         bool
+	MultipleResultsAndBlockParams bool
+	BulkMemoryOperations          bool
+	ReferenceTypes                bool
+	// Enabled by default for everything but wavm-disas,
+	QuotedNamesInTextFormat bool
 	//// where a command-line flag is required to enable it
 	//// to ensure the default output uses standard syntax.
 	//
 	//// WAVM-specific extensions
-	//bool sharedTables = true;
-	//bool functionRefInstruction = true;
-	//bool requireSharedFlagForAtomicOperators = false; // (true is standard)
+	SharedTables           bool
+	FunctionRefInstruction bool
+	// true is standard
+	RequireSharedFlagForAtomicOperators bool
 	//
-	//Uptr maxLocals = 65536;
-	//Uptr maxLabelsPerFunction = UINTPTR_MAX;
+	MaxLocals            uint64
+	MaxLabelsPerFunction uint64
 }
 
 func NewFeatureSepc() *FeatureSpec {
-	//TODO
-	return &FeatureSpec{}
+	return &FeatureSpec{
+		MVP:                                 true,
+		ImportExportMutableGlobals:          true,
+		ExtendedNamesSection:                true,
+		Simd:                                true,
+		Atomics:                             true,
+		ExceptionHandling:                   true,
+		NonTrappingFloatToInt:               true,
+		ExtendedSignExtension:               true,
+		MultipleResultsAndBlockParams:       true,
+		BulkMemoryOperations:                true,
+		ReferenceTypes:                      true,
+		QuotedNamesInTextFormat:             true,
+		SharedTables:                        true,
+		FunctionRefInstruction:              true,
+		RequireSharedFlagForAtomicOperators: false,
+		MaxLocals:                           65536,
+		MaxLabelsPerFunction:                UINT64_MAX,
+	}
 }
