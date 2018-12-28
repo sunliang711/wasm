@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) globalSection(sec *Section) error {
-	err := checkSection(sec, types.OrderGlobal)
+	err := checkSection(sec, IR.OrderGlobal)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (p *Parser) globalSection(sec *Section) error {
 		if err != nil {
 			return err
 		}
-		globalDef := types.GlobalDef{Type: globalType, Initializer: &initExpression}
+		globalDef := IR.GlobalDef{Type: globalType, Initializer: &initExpression}
 		p.Module.Globals.Defs = append(p.Module.Globals.Defs, globalDef)
 	}
 

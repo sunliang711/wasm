@@ -2,15 +2,15 @@ package parser
 
 import (
 	"io"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
-func DecodeNoImm(rd io.Reader, imm *types.NoImm, funcDef *types.FunctionDef) error {
+func DecodeNoImm(rd io.Reader, imm *IR.NoImm, funcDef *IR.FunctionDef) error {
 	return nil
 
 }
-func DecodeControlStructureImm(rd io.Reader, imm *types.ControlStructureImm, funcDef *types.FunctionDef) error {
+func DecodeControlStructureImm(rd io.Reader, imm *IR.ControlStructureImm, funcDef *IR.FunctionDef) error {
 	var encodedBlockType int64
 	_, err := utils.DecodeVarInt(rd, 32, &encodedBlockType)
 	if err != nil {
@@ -18,13 +18,13 @@ func DecodeControlStructureImm(rd io.Reader, imm *types.ControlStructureImm, fun
 	}
 	switch {
 	case encodedBlockType >= 0:
-		imm.Type.Format = uint32(types.FormatFunctionType)
+		imm.Type.Format = uint32(IR.FormatFunctionType)
 		imm.Type.Index = uint64(encodedBlockType)
 	case encodedBlockType == -64:
-		imm.Type.Format = uint32(types.FormatNoParametersOrResult)
-		imm.Type.ResultType = uint32(types.TypeAny)
+		imm.Type.Format = uint32(IR.FormatNoParametersOrResult)
+		imm.Type.ResultType = uint32(IR.TypeAny)
 	default:
-		imm.Type.Format = uint32(types.FormatOneResult)
+		imm.Type.Format = uint32(IR.FormatOneResult)
 		vt, err := DecodeValueType(int8(encodedBlockType))
 		if err != nil {
 			return err
@@ -35,7 +35,7 @@ func DecodeControlStructureImm(rd io.Reader, imm *types.ControlStructureImm, fun
 	return nil
 }
 
-func DecodeBranchImm(rd io.Reader, imm *types.BranchImm, funcDef *types.FunctionDef) error {
+func DecodeBranchImm(rd io.Reader, imm *IR.BranchImm, funcDef *IR.FunctionDef) error {
 	var targetDepth uint32
 	_, err := utils.DecodeVarInt(rd, 32, &targetDepth)
 	if err != nil {
@@ -46,7 +46,7 @@ func DecodeBranchImm(rd io.Reader, imm *types.BranchImm, funcDef *types.Function
 	return nil
 }
 
-func DecodeAtomicLoadOrStoreImm(rd io.Reader, imm *types.AtomicLoadOrStoreImm, funcDef *types.FunctionDef) error {
+func DecodeAtomicLoadOrStoreImm(rd io.Reader, imm *IR.AtomicLoadOrStoreImm, funcDef *IR.FunctionDef) error {
 	var align uint8
 	var offset uint32
 	_, err := utils.DecodeVarInt(rd, 7, &align)
@@ -63,7 +63,7 @@ func DecodeAtomicLoadOrStoreImm(rd io.Reader, imm *types.AtomicLoadOrStoreImm, f
 	imm.Offset = uint32(offset)
 	return nil
 }
-func DecodeBranchTableImm(rd io.Reader, imm *types.BranchTableImm, funcDef *types.FunctionDef) error {
+func DecodeBranchTableImm(rd io.Reader, imm *IR.BranchTableImm, funcDef *IR.FunctionDef) error {
 	var branchTable []uint64
 	var targetDepth uint32
 
@@ -92,7 +92,7 @@ func DecodeBranchTableImm(rd io.Reader, imm *types.BranchTableImm, funcDef *type
 	return nil
 }
 
-func DecodeCallIndirectImm(rd io.Reader, imm *types.CallIndirectImm, funcDef *types.FunctionDef) error {
+func DecodeCallIndirectImm(rd io.Reader, imm *IR.CallIndirectImm, funcDef *IR.FunctionDef) error {
 	var (
 		typeIndex  uint32
 		tableIndex uint32
@@ -109,7 +109,7 @@ func DecodeCallIndirectImm(rd io.Reader, imm *types.CallIndirectImm, funcDef *ty
 	imm.TableIndex = uint64(tableIndex)
 	return nil
 }
-func DecodeDataSegmentAndMemImm(rd io.Reader, imm *types.DataSegmentAndMemImm, funcDef *types.FunctionDef) error {
+func DecodeDataSegmentAndMemImm(rd io.Reader, imm *IR.DataSegmentAndMemImm, funcDef *IR.FunctionDef) error {
 	var (
 		dataSegIndex uint32
 		memoryIndex  uint32
@@ -128,7 +128,7 @@ func DecodeDataSegmentAndMemImm(rd io.Reader, imm *types.DataSegmentAndMemImm, f
 	return nil
 }
 
-func DecodeDataSegmentImm(rd io.Reader, imm *types.DataSegmentImm, funcDef *types.FunctionDef) error {
+func DecodeDataSegmentImm(rd io.Reader, imm *IR.DataSegmentImm, funcDef *IR.FunctionDef) error {
 	var dataSegIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &dataSegIndex)
 	if err != nil {
@@ -138,7 +138,7 @@ func DecodeDataSegmentImm(rd io.Reader, imm *types.DataSegmentImm, funcDef *type
 
 	return nil
 }
-func DecodeElemSegmentAndTableImm(rd io.Reader, imm *types.ElemSegmentAndTableImm, funcDef *types.FunctionDef) error {
+func DecodeElemSegmentAndTableImm(rd io.Reader, imm *IR.ElemSegmentAndTableImm, funcDef *IR.FunctionDef) error {
 	var (
 		elemSegIndex uint32
 		tableIndex   uint32
@@ -156,7 +156,7 @@ func DecodeElemSegmentAndTableImm(rd io.Reader, imm *types.ElemSegmentAndTableIm
 	imm.TableIndex = uint64(tableIndex)
 	return nil
 }
-func DecodeElemSegmentImm(rd io.Reader, imm *types.ElemSegmentImm, funcDef *types.FunctionDef) error {
+func DecodeElemSegmentImm(rd io.Reader, imm *IR.ElemSegmentImm, funcDef *IR.FunctionDef) error {
 	var elemSegIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &elemSegIndex)
 	if err != nil {
@@ -165,7 +165,7 @@ func DecodeElemSegmentImm(rd io.Reader, imm *types.ElemSegmentImm, funcDef *type
 	imm.ElemSegmentIndex = uint64(elemSegIndex)
 	return nil
 }
-func DecodeExceptionTypeImm(rd io.Reader, imm *types.ExceptionTypeImm, funcDef *types.FunctionDef) error {
+func DecodeExceptionTypeImm(rd io.Reader, imm *IR.ExceptionTypeImm, funcDef *IR.FunctionDef) error {
 	var typeIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &typeIndex)
 	if err != nil {
@@ -174,7 +174,7 @@ func DecodeExceptionTypeImm(rd io.Reader, imm *types.ExceptionTypeImm, funcDef *
 	imm.ExceptionTypeIndex = uint64(typeIndex)
 	return nil
 }
-func DecodeFunctionImm(rd io.Reader, imm *types.FunctionImm, funcDef *types.FunctionDef) error {
+func DecodeFunctionImm(rd io.Reader, imm *IR.FunctionImm, funcDef *IR.FunctionDef) error {
 	var functionIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &functionIndex)
 	if err != nil {
@@ -183,7 +183,7 @@ func DecodeFunctionImm(rd io.Reader, imm *types.FunctionImm, funcDef *types.Func
 	imm.FunctionIndex = uint64(functionIndex)
 	return nil
 }
-func DecodeGetOrSetVariableImm(rd io.Reader, imm *types.GetOrSetVariableImm, funcDef *types.FunctionDef) error {
+func DecodeGetOrSetVariableImm(rd io.Reader, imm *IR.GetOrSetVariableImm, funcDef *IR.FunctionDef) error {
 	var varIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &varIndex)
 	if err != nil {
@@ -193,7 +193,7 @@ func DecodeGetOrSetVariableImm(rd io.Reader, imm *types.GetOrSetVariableImm, fun
 	return nil
 }
 
-func DecodeLaneIndexImm(rd io.Reader, imm *types.LaneIndexImm, funcDef *types.FunctionDef) error {
+func DecodeLaneIndexImm(rd io.Reader, imm *IR.LaneIndexImm, funcDef *IR.FunctionDef) error {
 	var laneIndex uint8
 	_, err := utils.DecodeVarInt(rd, 7, &laneIndex)
 	if err != nil {
@@ -202,7 +202,7 @@ func DecodeLaneIndexImm(rd io.Reader, imm *types.LaneIndexImm, funcDef *types.Fu
 	imm.LaneIndex = laneIndex
 	return nil
 }
-func DecodeLoadOrStoreImm(rd io.Reader, imm *types.LoadOrStoreImm, funcDef *types.FunctionDef) error {
+func DecodeLoadOrStoreImm(rd io.Reader, imm *IR.LoadOrStoreImm, funcDef *IR.FunctionDef) error {
 	var (
 		alignment uint8
 		offset    uint32
@@ -221,7 +221,7 @@ func DecodeLoadOrStoreImm(rd io.Reader, imm *types.LoadOrStoreImm, funcDef *type
 	return nil
 }
 
-func DecodeMemoryImm(rd io.Reader, imm *types.MemoryImm, funcDef *types.FunctionDef) error {
+func DecodeMemoryImm(rd io.Reader, imm *IR.MemoryImm, funcDef *IR.FunctionDef) error {
 	err := checkConstant(rd, []byte{0}, "memory.(grow|size|copy|fill) immediate reserved field must be 0")
 	if err != nil {
 		return err
@@ -230,7 +230,7 @@ func DecodeMemoryImm(rd io.Reader, imm *types.MemoryImm, funcDef *types.Function
 	return nil
 }
 
-func DecodeRethrowImm(rd io.Reader, imm *types.RethrowImm, funcDef *types.FunctionDef) error {
+func DecodeRethrowImm(rd io.Reader, imm *IR.RethrowImm, funcDef *IR.FunctionDef) error {
 	var catchDepth uint32
 	_, err := utils.DecodeVarInt(rd, 32, &catchDepth)
 	if err != nil {
@@ -240,7 +240,7 @@ func DecodeRethrowImm(rd io.Reader, imm *types.RethrowImm, funcDef *types.Functi
 	return nil
 }
 
-func DecodeTableImm(rd io.Reader, imm *types.TableImm, funcDef *types.FunctionDef) error {
+func DecodeTableImm(rd io.Reader, imm *IR.TableImm, funcDef *IR.FunctionDef) error {
 	var tableIndex uint32
 	_, err := utils.DecodeVarInt(rd, 32, &tableIndex)
 	if err != nil {
@@ -250,7 +250,7 @@ func DecodeTableImm(rd io.Reader, imm *types.TableImm, funcDef *types.FunctionDe
 	return nil
 }
 
-func DecodeShuffleImm_16(rd io.Reader, imm *types.ShuffleImm_16, funcDef *types.FunctionDef) error {
+func DecodeShuffleImm_16(rd io.Reader, imm *IR.ShuffleImm_16, funcDef *IR.FunctionDef) error {
 	var index uint8
 	for laneIndex := 0; laneIndex < 16; laneIndex++ {
 		_, err := utils.DecodeVarInt(rd, 7, &index)
@@ -262,7 +262,7 @@ func DecodeShuffleImm_16(rd io.Reader, imm *types.ShuffleImm_16, funcDef *types.
 	return nil
 }
 
-func DecodeLiteralImm_F32(rd io.Reader, imm *types.LiteralImm_F32, funcDef *types.FunctionDef) error {
+func DecodeLiteralImm_F32(rd io.Reader, imm *IR.LiteralImm_F32, funcDef *IR.FunctionDef) error {
 	f32Bytes, err := utils.ReadNByte(rd, 4)
 	if err != nil {
 		return err
@@ -275,7 +275,7 @@ func DecodeLiteralImm_F32(rd io.Reader, imm *types.LiteralImm_F32, funcDef *type
 	return nil
 }
 
-func DecodeLiteralImm_F64(rd io.Reader, imm *types.LiteralImm_F64, funcDef *types.FunctionDef) error {
+func DecodeLiteralImm_F64(rd io.Reader, imm *IR.LiteralImm_F64, funcDef *IR.FunctionDef) error {
 	f64Bytes, err := utils.ReadNByte(rd, 8)
 	if err != nil {
 		return err
@@ -289,7 +289,7 @@ func DecodeLiteralImm_F64(rd io.Reader, imm *types.LiteralImm_F64, funcDef *type
 	return nil
 }
 
-func DecodeLiteralImm_I32(rd io.Reader, imm *types.LiteralImm_I32, funcDef *types.FunctionDef) error {
+func DecodeLiteralImm_I32(rd io.Reader, imm *IR.LiteralImm_I32, funcDef *IR.FunctionDef) error {
 	var v int32
 	_, err := utils.DecodeVarInt(rd, 32, &v)
 	if err != nil {
@@ -299,7 +299,7 @@ func DecodeLiteralImm_I32(rd io.Reader, imm *types.LiteralImm_I32, funcDef *type
 	return nil
 }
 
-func DecodeLiteralImm_I64(rd io.Reader, imm *types.LiteralImm_I64, funcDef *types.FunctionDef) error {
+func DecodeLiteralImm_I64(rd io.Reader, imm *IR.LiteralImm_I64, funcDef *IR.FunctionDef) error {
 	var v int64
 	_, err := utils.DecodeVarInt(rd, 64, &v)
 	if err != nil {
@@ -310,7 +310,7 @@ func DecodeLiteralImm_I64(rd io.Reader, imm *types.LiteralImm_I64, funcDef *type
 	return nil
 }
 
-func DecodeLiteralImm_V128(rd io.Reader, imm *types.LiteralImm_V128, funcDef *types.FunctionDef) error {
+func DecodeLiteralImm_V128(rd io.Reader, imm *IR.LiteralImm_V128, funcDef *IR.FunctionDef) error {
 	v128Bytes, err := utils.ReadNByte(rd, 16)
 	if err != nil {
 		return err

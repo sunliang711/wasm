@@ -3,17 +3,17 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) userSection(sec *Section) error {
-	err := checkSection(sec, types.OrderUser)
+	err := checkSection(sec, IR.OrderUser)
 	if err != nil {
 		return err
 	}
 	rd := bytes.NewReader(sec.Data)
-	userSec := types.UserSection{}
+	userSec := IR.UserSection{}
 	//1. name
 	nameUsedBytes, nameBytes, err := utils.ReadVarChars(rd)
 	if err != nil {

@@ -1,4 +1,4 @@
-package types
+package IR
 #include "OperatorTable.h"
 
 //Note this file is created by makeTypes.sh,Don't modify this file directly

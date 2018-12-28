@@ -1,4 +1,6 @@
-package types
+// Note this file is created by makeType.sh
+// Don't modify it directly
+package IR
 
 type OpcodeAndImm_AtomicLoadOrStoreImm struct {
 	Opcode

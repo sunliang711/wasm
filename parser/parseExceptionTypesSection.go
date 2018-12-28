@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) exceptionTypesSection(sec *Section) error {
-	err := checkSection(sec, types.OrderExceptionTypes)
+	err := checkSection(sec, IR.OrderExceptionTypes)
 	if err != nil {
 		return err
 	}
@@ -23,14 +23,14 @@ func (p *Parser) exceptionTypesSection(sec *Section) error {
 
 	//2. exceptionTypes
 	for i := 0; i < int(numExcep); i++ {
-		params := types.TypeTuple{}
+		params := IR.TypeTuple{}
 		err = DecodeTypeTuple(rd, &params)
 		if err != nil {
 			return err
 		}
 
-		excType := types.ExceptionType{Params: params}
-		excDef := types.ExceptionTypeDef{Type: excType}
+		excType := IR.ExceptionType{Params: params}
+		excDef := IR.ExceptionTypeDef{Type: excType}
 		p.Module.ExceptionTypes.Defs = append(p.Module.ExceptionTypes.Defs, excDef)
 		logrus.Infof("<exceptiontype section> exection def: %v", excDef)
 	}

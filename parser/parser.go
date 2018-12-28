@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"sync"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -23,10 +24,10 @@ type Parser struct {
 	ChQuit    chan struct{}
 	ChDone    chan struct{}
 	Wg        *sync.WaitGroup
-	Module    *types.Module
+	Module    *IR.Module
 	Closed    bool
 
-	*types.DeferredCodeValidationState
+	*IR.DeferredCodeValidationState
 
 	typeParsed            chan struct{}
 	funcDeclarationParsed chan struct{}
@@ -55,11 +56,11 @@ func NewParser(filename string) (*Parser, error) {
 		ChQuit:                      make(chan struct{}),
 		ChDone:                      make(chan struct{}),
 		Wg:                          new(sync.WaitGroup),
-		Module:                      types.NewModule(),
+		Module:                      IR.NewModule(),
 		Closed:                      false,
 		typeParsed:                  make(chan struct{}, 2),
 		funcDeclarationParsed:       make(chan struct{}, 1),
-		DeferredCodeValidationState: new(types.DeferredCodeValidationState),
+		DeferredCodeValidationState: new(IR.DeferredCodeValidationState),
 	}, nil
 }
 
@@ -86,7 +87,7 @@ func (p *Parser) fileLoop() {
 		return
 	}
 
-	lastSectionType := types.OrderUnknown
+	lastSectionType := IR.OrderUnknown
 
 	// read loop
 	// get section bytes,then send to loop()
@@ -101,15 +102,15 @@ func (p *Parser) fileLoop() {
 			p.NotifyError(err)
 			break
 		}
-		rawSectionType := types.RawSecType(bufType[0])
-		orderSection, err := types.SectionType2Order(rawSectionType)
+		rawSectionType := IR.RawSecType(bufType[0])
+		orderSection, err := IR.SectionType2Order(rawSectionType)
 		if err != nil {
 			p.NotifyError(err)
 			break
 		}
 
 		//check section order
-		if orderSection != types.OrderUser {
+		if orderSection != IR.OrderUser {
 			if orderSection > lastSectionType {
 				lastSectionType = orderSection
 			} else {
@@ -182,31 +183,31 @@ func (p *Parser) parseSection(sec *Section) {
 	)
 	defer p.Wg.Done()
 	switch sec.Type {
-	case types.OrderType:
+	case IR.OrderType:
 		err = p.typeSection(sec)
-	case types.OrderImport:
+	case IR.OrderImport:
 		err = p.importSection(sec)
-	case types.OrderFunctionDeclarations:
+	case IR.OrderFunctionDeclarations:
 		err = p.functionDeclarationsSection(sec)
-	case types.OrderTable:
+	case IR.OrderTable:
 		err = p.tableSection(sec)
-	case types.OrderMemory:
+	case IR.OrderMemory:
 		err = p.memorySection(sec)
-	case types.OrderGlobal:
+	case IR.OrderGlobal:
 		err = p.globalSection(sec)
-	case types.OrderExceptionTypes:
+	case IR.OrderExceptionTypes:
 		err = p.exceptionTypesSection(sec)
-	case types.OrderExport:
+	case IR.OrderExport:
 		err = p.exportSection(sec)
-	case types.OrderStart:
+	case IR.OrderStart:
 		err = p.startSection(sec)
-	case types.OrderElem:
+	case IR.OrderElem:
 		err = p.elemSection(sec)
-	case types.OrderFunctionDefinitions:
+	case IR.OrderFunctionDefinitions:
 		err = p.functionDefinitionsSection(sec)
-	case types.OrderData:
+	case IR.OrderData:
 		err = p.dataSection(sec)
-	case types.OrderUser:
+	case IR.OrderUser:
 		err = p.userSection(sec)
 	}
 	if err != nil {

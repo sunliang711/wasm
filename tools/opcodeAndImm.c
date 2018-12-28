@@ -1,5 +1,5 @@
 #include "imm.h"
-package types
+package IR
 //Note this file is created by makeTypes.sh,Don't modify this file directly
 
 #define visit_imm(imm) \

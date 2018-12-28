@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) memorySection(sec *Section) error {
-	err := checkSection(sec, types.OrderMemory)
+	err := checkSection(sec, IR.OrderMemory)
 	if err != nil {
 		return err
 	}
@@ -27,8 +27,8 @@ func (p *Parser) memorySection(sec *Section) error {
 		if err != nil {
 			return err
 		}
-		mType := types.MemoryType{IsShared: isShared, Size: types.SizeConstraints{min, max}}
-		mDef := types.MemoryDef{Type: mType}
+		mType := IR.MemoryType{IsShared: isShared, Size: IR.SizeConstraints{min, max}}
+		mDef := IR.MemoryDef{Type: mType}
 		p.Module.Memories.Defs = append(p.Module.Memories.Defs, mDef)
 		logrus.Infof("<memory section> memory def: %v", mDef)
 	}

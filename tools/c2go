@@ -67,3 +67,6 @@ go fmt $out
 if (($del==1));then
     rm -rf ${out}.bak
 fi
+
+(echo -e "// Note this file is created by makeType.sh\n// Don't modify it directly";cat $out)>$out.xx
+mv $out.xx $out

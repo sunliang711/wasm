@@ -1,13 +1,15 @@
+// Note this file is created by makeType.sh
+// Don't modify it directly
 package parser
 
 import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"wasm/types"
+	"wasm/types/IR"
 )
 
-func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte, error) {
+func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]byte, error) {
 	rd := bytes.NewReader(opcodeBytes)
 	var ret []byte
 
@@ -20,5714 +22,5714 @@ func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte,
 			return nil, err
 		}
 		var buf bytes.Buffer
-		switch types.Opcode(opc) {
-		case types.OPCunreachable:
-			imm := types.NoImm{}
+		switch IR.Opcode(opc) {
+		case IR.OPCunreachable:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCunreachable
+			opimm.Opcode = IR.OPCunreachable
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCbr:
-			imm := types.BranchImm{}
+		case IR.OPCbr:
+			imm := IR.BranchImm{}
 			err = DecodeBranchImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_BranchImm{}
+			opimm := IR.OpcodeAndImm_BranchImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCbr
+			opimm.Opcode = IR.OPCbr
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCbr_if:
-			imm := types.BranchImm{}
+		case IR.OPCbr_if:
+			imm := IR.BranchImm{}
 			err = DecodeBranchImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_BranchImm{}
+			opimm := IR.OpcodeAndImm_BranchImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCbr_if
+			opimm.Opcode = IR.OPCbr_if
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCbr_table:
-			imm := types.BranchTableImm{}
+		case IR.OPCbr_table:
+			imm := IR.BranchTableImm{}
 			err = DecodeBranchTableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_BranchTableImm{}
+			opimm := IR.OpcodeAndImm_BranchTableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCbr_table
+			opimm.Opcode = IR.OPCbr_table
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCreturn_:
-			imm := types.NoImm{}
+		case IR.OPCreturn_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCreturn_
+			opimm.Opcode = IR.OPCreturn_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCcall:
-			imm := types.FunctionImm{}
+		case IR.OPCcall:
+			imm := IR.FunctionImm{}
 			err = DecodeFunctionImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_FunctionImm{}
+			opimm := IR.OpcodeAndImm_FunctionImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCcall
+			opimm.Opcode = IR.OPCcall
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCcall_indirect:
-			imm := types.CallIndirectImm{}
+		case IR.OPCcall_indirect:
+			imm := IR.CallIndirectImm{}
 			err = DecodeCallIndirectImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_CallIndirectImm{}
+			opimm := IR.OpcodeAndImm_CallIndirectImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCcall_indirect
+			opimm.Opcode = IR.OPCcall_indirect
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCdrop:
-			imm := types.NoImm{}
+		case IR.OPCdrop:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCdrop
+			opimm.Opcode = IR.OPCdrop
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCselect:
-			imm := types.NoImm{}
+		case IR.OPCselect:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCselect
+			opimm.Opcode = IR.OPCselect
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCget_local:
-			imm := types.GetOrSetVariableImm{}
+		case IR.OPCget_local:
+			imm := IR.GetOrSetVariableImm{}
 			err = DecodeGetOrSetVariableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_GetOrSetVariableImm{}
+			opimm := IR.OpcodeAndImm_GetOrSetVariableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCget_local
+			opimm.Opcode = IR.OPCget_local
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCset_local:
-			imm := types.GetOrSetVariableImm{}
+		case IR.OPCset_local:
+			imm := IR.GetOrSetVariableImm{}
 			err = DecodeGetOrSetVariableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_GetOrSetVariableImm{}
+			opimm := IR.OpcodeAndImm_GetOrSetVariableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCset_local
+			opimm.Opcode = IR.OPCset_local
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtee_local:
-			imm := types.GetOrSetVariableImm{}
+		case IR.OPCtee_local:
+			imm := IR.GetOrSetVariableImm{}
 			err = DecodeGetOrSetVariableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_GetOrSetVariableImm{}
+			opimm := IR.OpcodeAndImm_GetOrSetVariableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtee_local
+			opimm.Opcode = IR.OPCtee_local
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCget_global:
-			imm := types.GetOrSetVariableImm{}
+		case IR.OPCget_global:
+			imm := IR.GetOrSetVariableImm{}
 			err = DecodeGetOrSetVariableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_GetOrSetVariableImm{}
+			opimm := IR.OpcodeAndImm_GetOrSetVariableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCget_global
+			opimm.Opcode = IR.OPCget_global
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCset_global:
-			imm := types.GetOrSetVariableImm{}
+		case IR.OPCset_global:
+			imm := IR.GetOrSetVariableImm{}
 			err = DecodeGetOrSetVariableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_GetOrSetVariableImm{}
+			opimm := IR.OpcodeAndImm_GetOrSetVariableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCset_global
+			opimm.Opcode = IR.OPCset_global
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtable_get:
-			imm := types.TableImm{}
+		case IR.OPCtable_get:
+			imm := IR.TableImm{}
 			err = DecodeTableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_TableImm{}
+			opimm := IR.OpcodeAndImm_TableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtable_get
+			opimm.Opcode = IR.OPCtable_get
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtable_set:
-			imm := types.TableImm{}
+		case IR.OPCtable_set:
+			imm := IR.TableImm{}
 			err = DecodeTableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_TableImm{}
+			opimm := IR.OpcodeAndImm_TableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtable_set
+			opimm.Opcode = IR.OPCtable_set
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCthrow_:
-			imm := types.ExceptionTypeImm{}
+		case IR.OPCthrow_:
+			imm := IR.ExceptionTypeImm{}
 			err = DecodeExceptionTypeImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ExceptionTypeImm{}
+			opimm := IR.OpcodeAndImm_ExceptionTypeImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCthrow_
+			opimm.Opcode = IR.OPCthrow_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCrethrow:
-			imm := types.RethrowImm{}
+		case IR.OPCrethrow:
+			imm := IR.RethrowImm{}
 			err = DecodeRethrowImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_RethrowImm{}
+			opimm := IR.OpcodeAndImm_RethrowImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCrethrow
+			opimm.Opcode = IR.OPCrethrow
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCnop:
-			imm := types.NoImm{}
+		case IR.OPCnop:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCnop
+			opimm.Opcode = IR.OPCnop
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_load:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_load:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_load
+			opimm.Opcode = IR.OPCi32_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load
+			opimm.Opcode = IR.OPCi64_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_load:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCf32_load:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_load
+			opimm.Opcode = IR.OPCf32_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_load:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCf64_load:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_load
+			opimm.Opcode = IR.OPCf64_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_load8_s:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_load8_s:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_load8_s
+			opimm.Opcode = IR.OPCi32_load8_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_load8_u:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_load8_u:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_load8_u
+			opimm.Opcode = IR.OPCi32_load8_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_load16_s:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_load16_s:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_load16_s
+			opimm.Opcode = IR.OPCi32_load16_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_load16_u:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_load16_u:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_load16_u
+			opimm.Opcode = IR.OPCi32_load16_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load8_s:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load8_s:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load8_s
+			opimm.Opcode = IR.OPCi64_load8_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load8_u:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load8_u:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load8_u
+			opimm.Opcode = IR.OPCi64_load8_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load16_s:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load16_s:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load16_s
+			opimm.Opcode = IR.OPCi64_load16_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load16_u:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load16_u:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load16_u
+			opimm.Opcode = IR.OPCi64_load16_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load32_s:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load32_s:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load32_s
+			opimm.Opcode = IR.OPCi64_load32_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_load32_u:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_load32_u:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_load32_u
+			opimm.Opcode = IR.OPCi64_load32_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_store:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_store:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_store
+			opimm.Opcode = IR.OPCi32_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_store:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_store:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_store
+			opimm.Opcode = IR.OPCi64_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_store:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCf32_store:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_store
+			opimm.Opcode = IR.OPCf32_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_store:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCf64_store:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_store
+			opimm.Opcode = IR.OPCf64_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_store8:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_store8:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_store8
+			opimm.Opcode = IR.OPCi32_store8
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_store16:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi32_store16:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_store16
+			opimm.Opcode = IR.OPCi32_store16
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_store8:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_store8:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_store8
+			opimm.Opcode = IR.OPCi64_store8
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_store16:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_store16:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_store16
+			opimm.Opcode = IR.OPCi64_store16
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_store32:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCi64_store32:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_store32
+			opimm.Opcode = IR.OPCi64_store32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_size:
-			imm := types.MemoryImm{}
+		case IR.OPCmemory_size:
+			imm := IR.MemoryImm{}
 			err = DecodeMemoryImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_MemoryImm{}
+			opimm := IR.OpcodeAndImm_MemoryImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_size
+			opimm.Opcode = IR.OPCmemory_size
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_grow:
-			imm := types.MemoryImm{}
+		case IR.OPCmemory_grow:
+			imm := IR.MemoryImm{}
 			err = DecodeMemoryImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_MemoryImm{}
+			opimm := IR.OpcodeAndImm_MemoryImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_grow
+			opimm.Opcode = IR.OPCmemory_grow
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_const:
-			imm := types.LiteralImm_I32{}
+		case IR.OPCi32_const:
+			imm := IR.LiteralImm_I32{}
 			err = DecodeLiteralImm_I32(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LiteralImm_I32{}
+			opimm := IR.OpcodeAndImm_LiteralImm_I32{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_const
+			opimm.Opcode = IR.OPCi32_const
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_const:
-			imm := types.LiteralImm_I64{}
+		case IR.OPCi64_const:
+			imm := IR.LiteralImm_I64{}
 			err = DecodeLiteralImm_I64(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LiteralImm_I64{}
+			opimm := IR.OpcodeAndImm_LiteralImm_I64{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_const
+			opimm.Opcode = IR.OPCi64_const
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_const:
-			imm := types.LiteralImm_F32{}
+		case IR.OPCf32_const:
+			imm := IR.LiteralImm_F32{}
 			err = DecodeLiteralImm_F32(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LiteralImm_F32{}
+			opimm := IR.OpcodeAndImm_LiteralImm_F32{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_const
+			opimm.Opcode = IR.OPCf32_const
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_const:
-			imm := types.LiteralImm_F64{}
+		case IR.OPCf64_const:
+			imm := IR.LiteralImm_F64{}
 			err = DecodeLiteralImm_F64(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LiteralImm_F64{}
+			opimm := IR.OpcodeAndImm_LiteralImm_F64{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_const
+			opimm.Opcode = IR.OPCf64_const
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_eqz:
-			imm := types.NoImm{}
+		case IR.OPCi32_eqz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_eqz
+			opimm.Opcode = IR.OPCi32_eqz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_eq:
-			imm := types.NoImm{}
+		case IR.OPCi32_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_eq
+			opimm.Opcode = IR.OPCi32_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_ne:
-			imm := types.NoImm{}
+		case IR.OPCi32_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_ne
+			opimm.Opcode = IR.OPCi32_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_lt_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_lt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_lt_s
+			opimm.Opcode = IR.OPCi32_lt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_lt_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_lt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_lt_u
+			opimm.Opcode = IR.OPCi32_lt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_gt_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_gt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_gt_s
+			opimm.Opcode = IR.OPCi32_gt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_gt_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_gt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_gt_u
+			opimm.Opcode = IR.OPCi32_gt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_le_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_le_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_le_s
+			opimm.Opcode = IR.OPCi32_le_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_le_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_le_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_le_u
+			opimm.Opcode = IR.OPCi32_le_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_ge_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_ge_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_ge_s
+			opimm.Opcode = IR.OPCi32_ge_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_ge_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_ge_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_ge_u
+			opimm.Opcode = IR.OPCi32_ge_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_eqz:
-			imm := types.NoImm{}
+		case IR.OPCi64_eqz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_eqz
+			opimm.Opcode = IR.OPCi64_eqz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_eq:
-			imm := types.NoImm{}
+		case IR.OPCi64_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_eq
+			opimm.Opcode = IR.OPCi64_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_ne:
-			imm := types.NoImm{}
+		case IR.OPCi64_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_ne
+			opimm.Opcode = IR.OPCi64_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_lt_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_lt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_lt_s
+			opimm.Opcode = IR.OPCi64_lt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_lt_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_lt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_lt_u
+			opimm.Opcode = IR.OPCi64_lt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_gt_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_gt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_gt_s
+			opimm.Opcode = IR.OPCi64_gt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_gt_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_gt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_gt_u
+			opimm.Opcode = IR.OPCi64_gt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_le_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_le_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_le_s
+			opimm.Opcode = IR.OPCi64_le_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_le_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_le_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_le_u
+			opimm.Opcode = IR.OPCi64_le_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_ge_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_ge_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_ge_s
+			opimm.Opcode = IR.OPCi64_ge_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_ge_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_ge_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_ge_u
+			opimm.Opcode = IR.OPCi64_ge_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_eq:
-			imm := types.NoImm{}
+		case IR.OPCf32_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_eq
+			opimm.Opcode = IR.OPCf32_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_ne:
-			imm := types.NoImm{}
+		case IR.OPCf32_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_ne
+			opimm.Opcode = IR.OPCf32_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_lt:
-			imm := types.NoImm{}
+		case IR.OPCf32_lt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_lt
+			opimm.Opcode = IR.OPCf32_lt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_gt:
-			imm := types.NoImm{}
+		case IR.OPCf32_gt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_gt
+			opimm.Opcode = IR.OPCf32_gt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_le:
-			imm := types.NoImm{}
+		case IR.OPCf32_le:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_le
+			opimm.Opcode = IR.OPCf32_le
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_ge:
-			imm := types.NoImm{}
+		case IR.OPCf32_ge:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_ge
+			opimm.Opcode = IR.OPCf32_ge
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_eq:
-			imm := types.NoImm{}
+		case IR.OPCf64_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_eq
+			opimm.Opcode = IR.OPCf64_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_ne:
-			imm := types.NoImm{}
+		case IR.OPCf64_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_ne
+			opimm.Opcode = IR.OPCf64_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_lt:
-			imm := types.NoImm{}
+		case IR.OPCf64_lt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_lt
+			opimm.Opcode = IR.OPCf64_lt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_gt:
-			imm := types.NoImm{}
+		case IR.OPCf64_gt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_gt
+			opimm.Opcode = IR.OPCf64_gt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_le:
-			imm := types.NoImm{}
+		case IR.OPCf64_le:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_le
+			opimm.Opcode = IR.OPCf64_le
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_ge:
-			imm := types.NoImm{}
+		case IR.OPCf64_ge:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_ge
+			opimm.Opcode = IR.OPCf64_ge
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_clz:
-			imm := types.NoImm{}
+		case IR.OPCi32_clz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_clz
+			opimm.Opcode = IR.OPCi32_clz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_ctz:
-			imm := types.NoImm{}
+		case IR.OPCi32_ctz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_ctz
+			opimm.Opcode = IR.OPCi32_ctz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_popcnt:
-			imm := types.NoImm{}
+		case IR.OPCi32_popcnt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_popcnt
+			opimm.Opcode = IR.OPCi32_popcnt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_add:
-			imm := types.NoImm{}
+		case IR.OPCi32_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_add
+			opimm.Opcode = IR.OPCi32_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_sub:
-			imm := types.NoImm{}
+		case IR.OPCi32_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_sub
+			opimm.Opcode = IR.OPCi32_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_mul:
-			imm := types.NoImm{}
+		case IR.OPCi32_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_mul
+			opimm.Opcode = IR.OPCi32_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_div_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_div_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_div_s
+			opimm.Opcode = IR.OPCi32_div_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_div_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_div_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_div_u
+			opimm.Opcode = IR.OPCi32_div_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_rem_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_rem_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_rem_s
+			opimm.Opcode = IR.OPCi32_rem_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_rem_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_rem_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_rem_u
+			opimm.Opcode = IR.OPCi32_rem_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_and_:
-			imm := types.NoImm{}
+		case IR.OPCi32_and_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_and_
+			opimm.Opcode = IR.OPCi32_and_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_or_:
-			imm := types.NoImm{}
+		case IR.OPCi32_or_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_or_
+			opimm.Opcode = IR.OPCi32_or_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_xor_:
-			imm := types.NoImm{}
+		case IR.OPCi32_xor_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_xor_
+			opimm.Opcode = IR.OPCi32_xor_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_shl:
-			imm := types.NoImm{}
+		case IR.OPCi32_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_shl
+			opimm.Opcode = IR.OPCi32_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_shr_s
+			opimm.Opcode = IR.OPCi32_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi32_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_shr_u
+			opimm.Opcode = IR.OPCi32_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_rotl:
-			imm := types.NoImm{}
+		case IR.OPCi32_rotl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_rotl
+			opimm.Opcode = IR.OPCi32_rotl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_rotr:
-			imm := types.NoImm{}
+		case IR.OPCi32_rotr:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_rotr
+			opimm.Opcode = IR.OPCi32_rotr
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_clz:
-			imm := types.NoImm{}
+		case IR.OPCi64_clz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_clz
+			opimm.Opcode = IR.OPCi64_clz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_ctz:
-			imm := types.NoImm{}
+		case IR.OPCi64_ctz:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_ctz
+			opimm.Opcode = IR.OPCi64_ctz
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_popcnt:
-			imm := types.NoImm{}
+		case IR.OPCi64_popcnt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_popcnt
+			opimm.Opcode = IR.OPCi64_popcnt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_add:
-			imm := types.NoImm{}
+		case IR.OPCi64_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_add
+			opimm.Opcode = IR.OPCi64_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_sub:
-			imm := types.NoImm{}
+		case IR.OPCi64_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_sub
+			opimm.Opcode = IR.OPCi64_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_mul:
-			imm := types.NoImm{}
+		case IR.OPCi64_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_mul
+			opimm.Opcode = IR.OPCi64_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_div_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_div_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_div_s
+			opimm.Opcode = IR.OPCi64_div_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_div_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_div_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_div_u
+			opimm.Opcode = IR.OPCi64_div_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_rem_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_rem_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_rem_s
+			opimm.Opcode = IR.OPCi64_rem_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_rem_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_rem_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_rem_u
+			opimm.Opcode = IR.OPCi64_rem_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_and_:
-			imm := types.NoImm{}
+		case IR.OPCi64_and_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_and_
+			opimm.Opcode = IR.OPCi64_and_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_or_:
-			imm := types.NoImm{}
+		case IR.OPCi64_or_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_or_
+			opimm.Opcode = IR.OPCi64_or_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_xor_:
-			imm := types.NoImm{}
+		case IR.OPCi64_xor_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_xor_
+			opimm.Opcode = IR.OPCi64_xor_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_shl:
-			imm := types.NoImm{}
+		case IR.OPCi64_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_shl
+			opimm.Opcode = IR.OPCi64_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_shr_s
+			opimm.Opcode = IR.OPCi64_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi64_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_shr_u
+			opimm.Opcode = IR.OPCi64_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_rotl:
-			imm := types.NoImm{}
+		case IR.OPCi64_rotl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_rotl
+			opimm.Opcode = IR.OPCi64_rotl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_rotr:
-			imm := types.NoImm{}
+		case IR.OPCi64_rotr:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_rotr
+			opimm.Opcode = IR.OPCi64_rotr
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_abs:
-			imm := types.NoImm{}
+		case IR.OPCf32_abs:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_abs
+			opimm.Opcode = IR.OPCf32_abs
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_neg:
-			imm := types.NoImm{}
+		case IR.OPCf32_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_neg
+			opimm.Opcode = IR.OPCf32_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_ceil:
-			imm := types.NoImm{}
+		case IR.OPCf32_ceil:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_ceil
+			opimm.Opcode = IR.OPCf32_ceil
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_floor:
-			imm := types.NoImm{}
+		case IR.OPCf32_floor:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_floor
+			opimm.Opcode = IR.OPCf32_floor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_trunc:
-			imm := types.NoImm{}
+		case IR.OPCf32_trunc:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_trunc
+			opimm.Opcode = IR.OPCf32_trunc
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_nearest:
-			imm := types.NoImm{}
+		case IR.OPCf32_nearest:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_nearest
+			opimm.Opcode = IR.OPCf32_nearest
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_sqrt:
-			imm := types.NoImm{}
+		case IR.OPCf32_sqrt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_sqrt
+			opimm.Opcode = IR.OPCf32_sqrt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_add:
-			imm := types.NoImm{}
+		case IR.OPCf32_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_add
+			opimm.Opcode = IR.OPCf32_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_sub:
-			imm := types.NoImm{}
+		case IR.OPCf32_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_sub
+			opimm.Opcode = IR.OPCf32_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_mul:
-			imm := types.NoImm{}
+		case IR.OPCf32_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_mul
+			opimm.Opcode = IR.OPCf32_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_div:
-			imm := types.NoImm{}
+		case IR.OPCf32_div:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_div
+			opimm.Opcode = IR.OPCf32_div
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_min:
-			imm := types.NoImm{}
+		case IR.OPCf32_min:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_min
+			opimm.Opcode = IR.OPCf32_min
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_max:
-			imm := types.NoImm{}
+		case IR.OPCf32_max:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_max
+			opimm.Opcode = IR.OPCf32_max
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_copysign:
-			imm := types.NoImm{}
+		case IR.OPCf32_copysign:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_copysign
+			opimm.Opcode = IR.OPCf32_copysign
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_abs:
-			imm := types.NoImm{}
+		case IR.OPCf64_abs:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_abs
+			opimm.Opcode = IR.OPCf64_abs
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_neg:
-			imm := types.NoImm{}
+		case IR.OPCf64_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_neg
+			opimm.Opcode = IR.OPCf64_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_ceil:
-			imm := types.NoImm{}
+		case IR.OPCf64_ceil:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_ceil
+			opimm.Opcode = IR.OPCf64_ceil
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_floor:
-			imm := types.NoImm{}
+		case IR.OPCf64_floor:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_floor
+			opimm.Opcode = IR.OPCf64_floor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_trunc:
-			imm := types.NoImm{}
+		case IR.OPCf64_trunc:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_trunc
+			opimm.Opcode = IR.OPCf64_trunc
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_nearest:
-			imm := types.NoImm{}
+		case IR.OPCf64_nearest:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_nearest
+			opimm.Opcode = IR.OPCf64_nearest
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_sqrt:
-			imm := types.NoImm{}
+		case IR.OPCf64_sqrt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_sqrt
+			opimm.Opcode = IR.OPCf64_sqrt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_add:
-			imm := types.NoImm{}
+		case IR.OPCf64_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_add
+			opimm.Opcode = IR.OPCf64_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_sub:
-			imm := types.NoImm{}
+		case IR.OPCf64_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_sub
+			opimm.Opcode = IR.OPCf64_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_mul:
-			imm := types.NoImm{}
+		case IR.OPCf64_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_mul
+			opimm.Opcode = IR.OPCf64_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_div:
-			imm := types.NoImm{}
+		case IR.OPCf64_div:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_div
+			opimm.Opcode = IR.OPCf64_div
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_min:
-			imm := types.NoImm{}
+		case IR.OPCf64_min:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_min
+			opimm.Opcode = IR.OPCf64_min
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_max:
-			imm := types.NoImm{}
+		case IR.OPCf64_max:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_max
+			opimm.Opcode = IR.OPCf64_max
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_copysign:
-			imm := types.NoImm{}
+		case IR.OPCf64_copysign:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_copysign
+			opimm.Opcode = IR.OPCf64_copysign
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_wrap_i64:
-			imm := types.NoImm{}
+		case IR.OPCi32_wrap_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_wrap_i64
+			opimm.Opcode = IR.OPCi32_wrap_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_s_f32:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_s_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_s_f32
+			opimm.Opcode = IR.OPCi32_trunc_s_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_u_f32:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_u_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_u_f32
+			opimm.Opcode = IR.OPCi32_trunc_u_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_s_f64:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_s_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_s_f64
+			opimm.Opcode = IR.OPCi32_trunc_s_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_u_f64:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_u_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_u_f64
+			opimm.Opcode = IR.OPCi32_trunc_u_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_extend_s_i32:
-			imm := types.NoImm{}
+		case IR.OPCi64_extend_s_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_extend_s_i32
+			opimm.Opcode = IR.OPCi64_extend_s_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_extend_u_i32:
-			imm := types.NoImm{}
+		case IR.OPCi64_extend_u_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_extend_u_i32
+			opimm.Opcode = IR.OPCi64_extend_u_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_s_f32:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_s_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_s_f32
+			opimm.Opcode = IR.OPCi64_trunc_s_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_u_f32:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_u_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_u_f32
+			opimm.Opcode = IR.OPCi64_trunc_u_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_s_f64:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_s_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_s_f64
+			opimm.Opcode = IR.OPCi64_trunc_s_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_u_f64:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_u_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_u_f64
+			opimm.Opcode = IR.OPCi64_trunc_u_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_convert_s_i32:
-			imm := types.NoImm{}
+		case IR.OPCf32_convert_s_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_convert_s_i32
+			opimm.Opcode = IR.OPCf32_convert_s_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_convert_u_i32:
-			imm := types.NoImm{}
+		case IR.OPCf32_convert_u_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_convert_u_i32
+			opimm.Opcode = IR.OPCf32_convert_u_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_convert_s_i64:
-			imm := types.NoImm{}
+		case IR.OPCf32_convert_s_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_convert_s_i64
+			opimm.Opcode = IR.OPCf32_convert_s_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_convert_u_i64:
-			imm := types.NoImm{}
+		case IR.OPCf32_convert_u_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_convert_u_i64
+			opimm.Opcode = IR.OPCf32_convert_u_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_demote_f64:
-			imm := types.NoImm{}
+		case IR.OPCf32_demote_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_demote_f64
+			opimm.Opcode = IR.OPCf32_demote_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_convert_s_i32:
-			imm := types.NoImm{}
+		case IR.OPCf64_convert_s_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_convert_s_i32
+			opimm.Opcode = IR.OPCf64_convert_s_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_convert_u_i32:
-			imm := types.NoImm{}
+		case IR.OPCf64_convert_u_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_convert_u_i32
+			opimm.Opcode = IR.OPCf64_convert_u_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_convert_s_i64:
-			imm := types.NoImm{}
+		case IR.OPCf64_convert_s_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_convert_s_i64
+			opimm.Opcode = IR.OPCf64_convert_s_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_convert_u_i64:
-			imm := types.NoImm{}
+		case IR.OPCf64_convert_u_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_convert_u_i64
+			opimm.Opcode = IR.OPCf64_convert_u_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_promote_f32:
-			imm := types.NoImm{}
+		case IR.OPCf64_promote_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_promote_f32
+			opimm.Opcode = IR.OPCf64_promote_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_reinterpret_f32:
-			imm := types.NoImm{}
+		case IR.OPCi32_reinterpret_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_reinterpret_f32
+			opimm.Opcode = IR.OPCi32_reinterpret_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_reinterpret_f64:
-			imm := types.NoImm{}
+		case IR.OPCi64_reinterpret_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_reinterpret_f64
+			opimm.Opcode = IR.OPCi64_reinterpret_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32_reinterpret_i32:
-			imm := types.NoImm{}
+		case IR.OPCf32_reinterpret_i32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32_reinterpret_i32
+			opimm.Opcode = IR.OPCf32_reinterpret_i32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64_reinterpret_i64:
-			imm := types.NoImm{}
+		case IR.OPCf64_reinterpret_i64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64_reinterpret_i64
+			opimm.Opcode = IR.OPCf64_reinterpret_i64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_extend8_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_extend8_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_extend8_s
+			opimm.Opcode = IR.OPCi32_extend8_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_extend16_s:
-			imm := types.NoImm{}
+		case IR.OPCi32_extend16_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_extend16_s
+			opimm.Opcode = IR.OPCi32_extend16_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_extend8_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_extend8_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_extend8_s
+			opimm.Opcode = IR.OPCi64_extend8_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_extend16_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_extend16_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_extend16_s
+			opimm.Opcode = IR.OPCi64_extend16_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_extend32_s:
-			imm := types.NoImm{}
+		case IR.OPCi64_extend32_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_extend32_s
+			opimm.Opcode = IR.OPCi64_extend32_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCref_null:
-			imm := types.NoImm{}
+		case IR.OPCref_null:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCref_null
+			opimm.Opcode = IR.OPCref_null
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCref_isnull:
-			imm := types.NoImm{}
+		case IR.OPCref_isnull:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCref_isnull
+			opimm.Opcode = IR.OPCref_isnull
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCref_func:
-			imm := types.FunctionImm{}
+		case IR.OPCref_func:
+			imm := IR.FunctionImm{}
 			err = DecodeFunctionImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_FunctionImm{}
+			opimm := IR.OpcodeAndImm_FunctionImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCref_func
+			opimm.Opcode = IR.OPCref_func
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_s_sat_f32:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_s_sat_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_s_sat_f32
+			opimm.Opcode = IR.OPCi32_trunc_s_sat_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_u_sat_f32:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_u_sat_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_u_sat_f32
+			opimm.Opcode = IR.OPCi32_trunc_u_sat_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_s_sat_f64:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_s_sat_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_s_sat_f64
+			opimm.Opcode = IR.OPCi32_trunc_s_sat_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_trunc_u_sat_f64:
-			imm := types.NoImm{}
+		case IR.OPCi32_trunc_u_sat_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_trunc_u_sat_f64
+			opimm.Opcode = IR.OPCi32_trunc_u_sat_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_s_sat_f32:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_s_sat_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_s_sat_f32
+			opimm.Opcode = IR.OPCi64_trunc_s_sat_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_u_sat_f32:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_u_sat_f32:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_u_sat_f32
+			opimm.Opcode = IR.OPCi64_trunc_u_sat_f32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_s_sat_f64:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_s_sat_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_s_sat_f64
+			opimm.Opcode = IR.OPCi64_trunc_s_sat_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_trunc_u_sat_f64:
-			imm := types.NoImm{}
+		case IR.OPCi64_trunc_u_sat_f64:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_trunc_u_sat_f64
+			opimm.Opcode = IR.OPCi64_trunc_u_sat_f64
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_init:
-			imm := types.DataSegmentAndMemImm{}
+		case IR.OPCmemory_init:
+			imm := IR.DataSegmentAndMemImm{}
 			err = DecodeDataSegmentAndMemImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_DataSegmentAndMemImm{}
+			opimm := IR.OpcodeAndImm_DataSegmentAndMemImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_init
+			opimm.Opcode = IR.OPCmemory_init
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_drop:
-			imm := types.DataSegmentImm{}
+		case IR.OPCmemory_drop:
+			imm := IR.DataSegmentImm{}
 			err = DecodeDataSegmentImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_DataSegmentImm{}
+			opimm := IR.OpcodeAndImm_DataSegmentImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_drop
+			opimm.Opcode = IR.OPCmemory_drop
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_copy:
-			imm := types.MemoryImm{}
+		case IR.OPCmemory_copy:
+			imm := IR.MemoryImm{}
 			err = DecodeMemoryImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_MemoryImm{}
+			opimm := IR.OpcodeAndImm_MemoryImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_copy
+			opimm.Opcode = IR.OPCmemory_copy
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCmemory_fill:
-			imm := types.MemoryImm{}
+		case IR.OPCmemory_fill:
+			imm := IR.MemoryImm{}
 			err = DecodeMemoryImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_MemoryImm{}
+			opimm := IR.OpcodeAndImm_MemoryImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCmemory_fill
+			opimm.Opcode = IR.OPCmemory_fill
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtable_init:
-			imm := types.ElemSegmentAndTableImm{}
+		case IR.OPCtable_init:
+			imm := IR.ElemSegmentAndTableImm{}
 			err = DecodeElemSegmentAndTableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ElemSegmentAndTableImm{}
+			opimm := IR.OpcodeAndImm_ElemSegmentAndTableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtable_init
+			opimm.Opcode = IR.OPCtable_init
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtable_drop:
-			imm := types.ElemSegmentImm{}
+		case IR.OPCtable_drop:
+			imm := IR.ElemSegmentImm{}
 			err = DecodeElemSegmentImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ElemSegmentImm{}
+			opimm := IR.OpcodeAndImm_ElemSegmentImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtable_drop
+			opimm.Opcode = IR.OPCtable_drop
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtable_copy:
-			imm := types.TableImm{}
+		case IR.OPCtable_copy:
+			imm := IR.TableImm{}
 			err = DecodeTableImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_TableImm{}
+			opimm := IR.OpcodeAndImm_TableImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtable_copy
+			opimm.Opcode = IR.OPCtable_copy
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_const:
-			imm := types.LiteralImm_V128{}
+		case IR.OPCv128_const:
+			imm := IR.LiteralImm_V128{}
 			err = DecodeLiteralImm_V128(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LiteralImm_V128{}
+			opimm := IR.OpcodeAndImm_LiteralImm_V128{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_const
+			opimm.Opcode = IR.OPCv128_const
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_load:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCv128_load:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_load
+			opimm.Opcode = IR.OPCv128_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_store:
-			imm := types.LoadOrStoreImm{}
+		case IR.OPCv128_store:
+			imm := IR.LoadOrStoreImm{}
 			err = DecodeLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_LoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_store
+			opimm.Opcode = IR.OPCv128_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_splat:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_splat
+			opimm.Opcode = IR.OPCi8x16_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_splat:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_splat
+			opimm.Opcode = IR.OPCi16x8_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_splat:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_splat
+			opimm.Opcode = IR.OPCi32x4_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_splat:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_splat
+			opimm.Opcode = IR.OPCi64x2_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_splat:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_splat
+			opimm.Opcode = IR.OPCf32x4_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_splat:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_splat:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_splat
+			opimm.Opcode = IR.OPCf64x2_splat
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_extract_lane_s:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi8x16_extract_lane_s:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_extract_lane_s
+			opimm.Opcode = IR.OPCi8x16_extract_lane_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_extract_lane_u:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi8x16_extract_lane_u:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_extract_lane_u
+			opimm.Opcode = IR.OPCi8x16_extract_lane_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_extract_lane_s:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi16x8_extract_lane_s:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_extract_lane_s
+			opimm.Opcode = IR.OPCi16x8_extract_lane_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_extract_lane_u:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi16x8_extract_lane_u:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_extract_lane_u
+			opimm.Opcode = IR.OPCi16x8_extract_lane_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_extract_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi32x4_extract_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_extract_lane
+			opimm.Opcode = IR.OPCi32x4_extract_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_extract_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi64x2_extract_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_extract_lane
+			opimm.Opcode = IR.OPCi64x2_extract_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_extract_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCf32x4_extract_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_extract_lane
+			opimm.Opcode = IR.OPCf32x4_extract_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_extract_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCf64x2_extract_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_extract_lane
+			opimm.Opcode = IR.OPCf64x2_extract_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi8x16_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_replace_lane
+			opimm.Opcode = IR.OPCi8x16_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi16x8_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_replace_lane
+			opimm.Opcode = IR.OPCi16x8_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi32x4_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_replace_lane
+			opimm.Opcode = IR.OPCi32x4_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCi64x2_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_replace_lane
+			opimm.Opcode = IR.OPCi64x2_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCf32x4_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_replace_lane
+			opimm.Opcode = IR.OPCf32x4_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_replace_lane:
-			imm := types.LaneIndexImm{}
+		case IR.OPCf64x2_replace_lane:
+			imm := IR.LaneIndexImm{}
 			err = DecodeLaneIndexImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_LaneIndexImm{}
+			opimm := IR.OpcodeAndImm_LaneIndexImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_replace_lane
+			opimm.Opcode = IR.OPCf64x2_replace_lane
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv8x16_shuffle:
-			imm := types.ShuffleImm_16{}
+		case IR.OPCv8x16_shuffle:
+			imm := IR.ShuffleImm_16{}
 			err = DecodeShuffleImm_16(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ShuffleImm_16{}
+			opimm := IR.OpcodeAndImm_ShuffleImm_16{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv8x16_shuffle
+			opimm.Opcode = IR.OPCv8x16_shuffle
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_add:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_add
+			opimm.Opcode = IR.OPCi8x16_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_add:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_add
+			opimm.Opcode = IR.OPCi16x8_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_add:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_add
+			opimm.Opcode = IR.OPCi32x4_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_add:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_add
+			opimm.Opcode = IR.OPCi64x2_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_sub:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_sub
+			opimm.Opcode = IR.OPCi8x16_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_sub:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_sub
+			opimm.Opcode = IR.OPCi16x8_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_sub:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_sub
+			opimm.Opcode = IR.OPCi32x4_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_sub:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_sub
+			opimm.Opcode = IR.OPCi64x2_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_mul:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_mul
+			opimm.Opcode = IR.OPCi8x16_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_mul:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_mul
+			opimm.Opcode = IR.OPCi16x8_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_mul:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_mul
+			opimm.Opcode = IR.OPCi32x4_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_neg:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_neg
+			opimm.Opcode = IR.OPCi8x16_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_neg:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_neg
+			opimm.Opcode = IR.OPCi16x8_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_neg:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_neg
+			opimm.Opcode = IR.OPCi32x4_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_neg:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_neg
+			opimm.Opcode = IR.OPCi64x2_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_add_saturate_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_add_saturate_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_add_saturate_s
+			opimm.Opcode = IR.OPCi8x16_add_saturate_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_add_saturate_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_add_saturate_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_add_saturate_u
+			opimm.Opcode = IR.OPCi8x16_add_saturate_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_add_saturate_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_add_saturate_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_add_saturate_s
+			opimm.Opcode = IR.OPCi16x8_add_saturate_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_add_saturate_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_add_saturate_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_add_saturate_u
+			opimm.Opcode = IR.OPCi16x8_add_saturate_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_sub_saturate_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_sub_saturate_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_sub_saturate_s
+			opimm.Opcode = IR.OPCi8x16_sub_saturate_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_sub_saturate_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_sub_saturate_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_sub_saturate_u
+			opimm.Opcode = IR.OPCi8x16_sub_saturate_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_sub_saturate_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_sub_saturate_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_sub_saturate_s
+			opimm.Opcode = IR.OPCi16x8_sub_saturate_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_sub_saturate_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_sub_saturate_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_sub_saturate_u
+			opimm.Opcode = IR.OPCi16x8_sub_saturate_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_shl:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_shl
+			opimm.Opcode = IR.OPCi8x16_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_shl:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_shl
+			opimm.Opcode = IR.OPCi16x8_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_shl:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_shl
+			opimm.Opcode = IR.OPCi32x4_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_shl:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_shl:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_shl
+			opimm.Opcode = IR.OPCi64x2_shl
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_shr_s
+			opimm.Opcode = IR.OPCi8x16_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_shr_u
+			opimm.Opcode = IR.OPCi8x16_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_shr_s
+			opimm.Opcode = IR.OPCi16x8_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_shr_u
+			opimm.Opcode = IR.OPCi16x8_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_shr_s
+			opimm.Opcode = IR.OPCi32x4_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_shr_u
+			opimm.Opcode = IR.OPCi32x4_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_shr_s:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_shr_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_shr_s
+			opimm.Opcode = IR.OPCi64x2_shr_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_shr_u:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_shr_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_shr_u
+			opimm.Opcode = IR.OPCi64x2_shr_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_and:
-			imm := types.NoImm{}
+		case IR.OPCv128_and:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_and
+			opimm.Opcode = IR.OPCv128_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_or:
-			imm := types.NoImm{}
+		case IR.OPCv128_or:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_or
+			opimm.Opcode = IR.OPCv128_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_xor:
-			imm := types.NoImm{}
+		case IR.OPCv128_xor:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_xor
+			opimm.Opcode = IR.OPCv128_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_not:
-			imm := types.NoImm{}
+		case IR.OPCv128_not:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_not
+			opimm.Opcode = IR.OPCv128_not
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCv128_bitselect:
-			imm := types.NoImm{}
+		case IR.OPCv128_bitselect:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCv128_bitselect
+			opimm.Opcode = IR.OPCv128_bitselect
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_any_true:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_any_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_any_true
+			opimm.Opcode = IR.OPCi8x16_any_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_any_true:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_any_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_any_true
+			opimm.Opcode = IR.OPCi16x8_any_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_any_true:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_any_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_any_true
+			opimm.Opcode = IR.OPCi32x4_any_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_any_true:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_any_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_any_true
+			opimm.Opcode = IR.OPCi64x2_any_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_all_true:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_all_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_all_true
+			opimm.Opcode = IR.OPCi8x16_all_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_all_true:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_all_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_all_true
+			opimm.Opcode = IR.OPCi16x8_all_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_all_true:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_all_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_all_true
+			opimm.Opcode = IR.OPCi32x4_all_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_all_true:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_all_true:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_all_true
+			opimm.Opcode = IR.OPCi64x2_all_true
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_eq:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_eq
+			opimm.Opcode = IR.OPCi8x16_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_eq:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_eq
+			opimm.Opcode = IR.OPCi16x8_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_eq:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_eq
+			opimm.Opcode = IR.OPCi32x4_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_eq:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_eq
+			opimm.Opcode = IR.OPCf32x4_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_eq:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_eq:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_eq
+			opimm.Opcode = IR.OPCf64x2_eq
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_ne:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_ne
+			opimm.Opcode = IR.OPCi8x16_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_ne:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_ne
+			opimm.Opcode = IR.OPCi16x8_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_ne:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_ne
+			opimm.Opcode = IR.OPCi32x4_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_ne:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_ne
+			opimm.Opcode = IR.OPCf32x4_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_ne:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_ne:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_ne
+			opimm.Opcode = IR.OPCf64x2_ne
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_lt_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_lt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_lt_s
+			opimm.Opcode = IR.OPCi8x16_lt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_lt_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_lt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_lt_u
+			opimm.Opcode = IR.OPCi8x16_lt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_lt_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_lt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_lt_s
+			opimm.Opcode = IR.OPCi16x8_lt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_lt_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_lt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_lt_u
+			opimm.Opcode = IR.OPCi16x8_lt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_lt_s:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_lt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_lt_s
+			opimm.Opcode = IR.OPCi32x4_lt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_lt_u:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_lt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_lt_u
+			opimm.Opcode = IR.OPCi32x4_lt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_lt:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_lt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_lt
+			opimm.Opcode = IR.OPCf32x4_lt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_lt:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_lt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_lt
+			opimm.Opcode = IR.OPCf64x2_lt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_le_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_le_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_le_s
+			opimm.Opcode = IR.OPCi8x16_le_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_le_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_le_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_le_u
+			opimm.Opcode = IR.OPCi8x16_le_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_le_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_le_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_le_s
+			opimm.Opcode = IR.OPCi16x8_le_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_le_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_le_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_le_u
+			opimm.Opcode = IR.OPCi16x8_le_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_le_s:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_le_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_le_s
+			opimm.Opcode = IR.OPCi32x4_le_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_le_u:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_le_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_le_u
+			opimm.Opcode = IR.OPCi32x4_le_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_le:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_le:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_le
+			opimm.Opcode = IR.OPCf32x4_le
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_le:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_le:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_le
+			opimm.Opcode = IR.OPCf64x2_le
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_gt_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_gt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_gt_s
+			opimm.Opcode = IR.OPCi8x16_gt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_gt_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_gt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_gt_u
+			opimm.Opcode = IR.OPCi8x16_gt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_gt_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_gt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_gt_s
+			opimm.Opcode = IR.OPCi16x8_gt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_gt_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_gt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_gt_u
+			opimm.Opcode = IR.OPCi16x8_gt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_gt_s:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_gt_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_gt_s
+			opimm.Opcode = IR.OPCi32x4_gt_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_gt_u:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_gt_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_gt_u
+			opimm.Opcode = IR.OPCi32x4_gt_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_gt:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_gt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_gt
+			opimm.Opcode = IR.OPCf32x4_gt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_gt:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_gt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_gt
+			opimm.Opcode = IR.OPCf64x2_gt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_ge_s:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_ge_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_ge_s
+			opimm.Opcode = IR.OPCi8x16_ge_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi8x16_ge_u:
-			imm := types.NoImm{}
+		case IR.OPCi8x16_ge_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi8x16_ge_u
+			opimm.Opcode = IR.OPCi8x16_ge_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_ge_s:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_ge_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_ge_s
+			opimm.Opcode = IR.OPCi16x8_ge_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi16x8_ge_u:
-			imm := types.NoImm{}
+		case IR.OPCi16x8_ge_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi16x8_ge_u
+			opimm.Opcode = IR.OPCi16x8_ge_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_ge_s:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_ge_s:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_ge_s
+			opimm.Opcode = IR.OPCi32x4_ge_s
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_ge_u:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_ge_u:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_ge_u
+			opimm.Opcode = IR.OPCi32x4_ge_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_ge:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_ge:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_ge
+			opimm.Opcode = IR.OPCf32x4_ge
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_ge:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_ge:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_ge
+			opimm.Opcode = IR.OPCf64x2_ge
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_neg:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_neg
+			opimm.Opcode = IR.OPCf32x4_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_neg:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_neg:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_neg
+			opimm.Opcode = IR.OPCf64x2_neg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_abs:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_abs:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_abs
+			opimm.Opcode = IR.OPCf32x4_abs
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_abs:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_abs:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_abs
+			opimm.Opcode = IR.OPCf64x2_abs
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_min:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_min:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_min
+			opimm.Opcode = IR.OPCf32x4_min
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_min:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_min:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_min
+			opimm.Opcode = IR.OPCf64x2_min
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_max:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_max:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_max
+			opimm.Opcode = IR.OPCf32x4_max
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_max:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_max:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_max
+			opimm.Opcode = IR.OPCf64x2_max
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_add:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_add
+			opimm.Opcode = IR.OPCf32x4_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_add:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_add:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_add
+			opimm.Opcode = IR.OPCf64x2_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_sub:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_sub
+			opimm.Opcode = IR.OPCf32x4_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_sub:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_sub:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_sub
+			opimm.Opcode = IR.OPCf64x2_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_div:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_div:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_div
+			opimm.Opcode = IR.OPCf32x4_div
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_div:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_div:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_div
+			opimm.Opcode = IR.OPCf64x2_div
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_mul:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_mul
+			opimm.Opcode = IR.OPCf32x4_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_mul:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_mul:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_mul
+			opimm.Opcode = IR.OPCf64x2_mul
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_sqrt:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_sqrt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_sqrt
+			opimm.Opcode = IR.OPCf32x4_sqrt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_sqrt:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_sqrt:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_sqrt
+			opimm.Opcode = IR.OPCf64x2_sqrt
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_convert_s_i32x4:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_convert_s_i32x4:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_convert_s_i32x4
+			opimm.Opcode = IR.OPCf32x4_convert_s_i32x4
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf32x4_convert_u_i32x4:
-			imm := types.NoImm{}
+		case IR.OPCf32x4_convert_u_i32x4:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf32x4_convert_u_i32x4
+			opimm.Opcode = IR.OPCf32x4_convert_u_i32x4
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_convert_s_i64x2:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_convert_s_i64x2:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_convert_s_i64x2
+			opimm.Opcode = IR.OPCf64x2_convert_s_i64x2
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCf64x2_convert_u_i64x2:
-			imm := types.NoImm{}
+		case IR.OPCf64x2_convert_u_i64x2:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCf64x2_convert_u_i64x2
+			opimm.Opcode = IR.OPCf64x2_convert_u_i64x2
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_trunc_s_sat_f32x4:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_trunc_s_sat_f32x4:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_trunc_s_sat_f32x4
+			opimm.Opcode = IR.OPCi32x4_trunc_s_sat_f32x4
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32x4_trunc_u_sat_f32x4:
-			imm := types.NoImm{}
+		case IR.OPCi32x4_trunc_u_sat_f32x4:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32x4_trunc_u_sat_f32x4
+			opimm.Opcode = IR.OPCi32x4_trunc_u_sat_f32x4
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_trunc_s_sat_f64x2:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_trunc_s_sat_f64x2:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_trunc_s_sat_f64x2
+			opimm.Opcode = IR.OPCi64x2_trunc_s_sat_f64x2
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64x2_trunc_u_sat_f64x2:
-			imm := types.NoImm{}
+		case IR.OPCi64x2_trunc_u_sat_f64x2:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64x2_trunc_u_sat_f64x2
+			opimm.Opcode = IR.OPCi64x2_trunc_u_sat_f64x2
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCatomic_wake:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCatomic_wake:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCatomic_wake
+			opimm.Opcode = IR.OPCatomic_wake
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_wait:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_wait:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_wait
+			opimm.Opcode = IR.OPCi32_atomic_wait
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_wait:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_wait:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_wait
+			opimm.Opcode = IR.OPCi64_atomic_wait
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_load:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_load:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_load
+			opimm.Opcode = IR.OPCi32_atomic_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_load:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_load:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_load
+			opimm.Opcode = IR.OPCi64_atomic_load
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_load8_u:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_load8_u:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_load8_u
+			opimm.Opcode = IR.OPCi32_atomic_load8_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_load16_u:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_load16_u:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_load16_u
+			opimm.Opcode = IR.OPCi32_atomic_load16_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_load8_u:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_load8_u:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_load8_u
+			opimm.Opcode = IR.OPCi64_atomic_load8_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_load16_u:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_load16_u:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_load16_u
+			opimm.Opcode = IR.OPCi64_atomic_load16_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_load32_u:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_load32_u:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_load32_u
+			opimm.Opcode = IR.OPCi64_atomic_load32_u
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_store:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_store:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_store
+			opimm.Opcode = IR.OPCi32_atomic_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_store:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_store:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_store
+			opimm.Opcode = IR.OPCi64_atomic_store
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_store8:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_store8:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_store8
+			opimm.Opcode = IR.OPCi32_atomic_store8
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_store16:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_store16:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_store16
+			opimm.Opcode = IR.OPCi32_atomic_store16
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_store8:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_store8:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_store8
+			opimm.Opcode = IR.OPCi64_atomic_store8
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_store16:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_store16:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_store16
+			opimm.Opcode = IR.OPCi64_atomic_store16
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_store32:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_store32:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_store32
+			opimm.Opcode = IR.OPCi64_atomic_store32
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_add
+			opimm.Opcode = IR.OPCi32_atomic_rmw_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_add
+			opimm.Opcode = IR.OPCi64_atomic_rmw_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_add
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_add
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_add
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_add
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_add:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_add:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_add
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_add
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_sub
+			opimm.Opcode = IR.OPCi32_atomic_rmw_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_sub
+			opimm.Opcode = IR.OPCi64_atomic_rmw_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_sub
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_sub
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_sub
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_sub
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_sub:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_sub:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_sub
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_sub
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_and
+			opimm.Opcode = IR.OPCi32_atomic_rmw_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_and
+			opimm.Opcode = IR.OPCi64_atomic_rmw_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_and
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_and
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_and
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_and
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_and:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_and:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_and
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_and
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_or
+			opimm.Opcode = IR.OPCi32_atomic_rmw_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_or
+			opimm.Opcode = IR.OPCi64_atomic_rmw_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_or
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_or
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_or
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_or
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_or:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_or:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_or
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_or
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_xor
+			opimm.Opcode = IR.OPCi32_atomic_rmw_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_xor
+			opimm.Opcode = IR.OPCi64_atomic_rmw_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_xor
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_xor
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_xor
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_xor
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_xor:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_xor:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_xor
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_xor
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_xchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_xchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_xchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_xchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_xchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_xchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_xchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_xchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_xchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_xchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw_cmpxchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw_cmpxchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw8_u_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw8_u_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw8_u_cmpxchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw8_u_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi32_atomic_rmw16_u_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi32_atomic_rmw16_u_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi32_atomic_rmw16_u_cmpxchg
+			opimm.Opcode = IR.OPCi32_atomic_rmw16_u_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw8_u_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw8_u_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw8_u_cmpxchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw8_u_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw16_u_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw16_u_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw16_u_cmpxchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw16_u_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCi64_atomic_rmw32_u_cmpxchg:
-			imm := types.AtomicLoadOrStoreImm{}
+		case IR.OPCi64_atomic_rmw32_u_cmpxchg:
+			imm := IR.AtomicLoadOrStoreImm{}
 			err = DecodeAtomicLoadOrStoreImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_AtomicLoadOrStoreImm{}
+			opimm := IR.OpcodeAndImm_AtomicLoadOrStoreImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCi64_atomic_rmw32_u_cmpxchg
+			opimm.Opcode = IR.OPCi64_atomic_rmw32_u_cmpxchg
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCblock:
-			imm := types.ControlStructureImm{}
+		case IR.OPCblock:
+			imm := IR.ControlStructureImm{}
 			err = DecodeControlStructureImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ControlStructureImm{}
+			opimm := IR.OpcodeAndImm_ControlStructureImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCblock
+			opimm.Opcode = IR.OPCblock
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCloop:
-			imm := types.ControlStructureImm{}
+		case IR.OPCloop:
+			imm := IR.ControlStructureImm{}
 			err = DecodeControlStructureImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ControlStructureImm{}
+			opimm := IR.OpcodeAndImm_ControlStructureImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCloop
+			opimm.Opcode = IR.OPCloop
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCif_:
-			imm := types.ControlStructureImm{}
+		case IR.OPCif_:
+			imm := IR.ControlStructureImm{}
 			err = DecodeControlStructureImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ControlStructureImm{}
+			opimm := IR.OpcodeAndImm_ControlStructureImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCif_
+			opimm.Opcode = IR.OPCif_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCelse_:
-			imm := types.NoImm{}
+		case IR.OPCelse_:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCelse_
+			opimm.Opcode = IR.OPCelse_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCend:
-			imm := types.NoImm{}
+		case IR.OPCend:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCend
+			opimm.Opcode = IR.OPCend
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCtry_:
-			imm := types.ControlStructureImm{}
+		case IR.OPCtry_:
+			imm := IR.ControlStructureImm{}
 			err = DecodeControlStructureImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ControlStructureImm{}
+			opimm := IR.OpcodeAndImm_ControlStructureImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCtry_
+			opimm.Opcode = IR.OPCtry_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCcatch_:
-			imm := types.ExceptionTypeImm{}
+		case IR.OPCcatch_:
+			imm := IR.ExceptionTypeImm{}
 			err = DecodeExceptionTypeImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_ExceptionTypeImm{}
+			opimm := IR.OpcodeAndImm_ExceptionTypeImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCcatch_
+			opimm.Opcode = IR.OPCcatch_
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err
 			}
 			ret = append(ret, buf.Bytes()...)
-		case types.OPCcatch_all:
-			imm := types.NoImm{}
+		case IR.OPCcatch_all:
+			imm := IR.NoImm{}
 			err = DecodeNoImm(rd, &imm, funcDef)
 			if err != nil {
 				return nil, err
 			}
-			opimm := types.OpcodeAndImm_NoImm{}
+			opimm := IR.OpcodeAndImm_NoImm{}
 			opimm.Imm = imm
-			opimm.Opcode = types.OPCcatch_all
+			opimm.Opcode = IR.OPCcatch_all
 			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 			if err != nil {
 				return nil, err

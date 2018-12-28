@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) tableSection(sec *Section) error {
-	err := checkSection(sec, types.OrderTable)
+	err := checkSection(sec, IR.OrderTable)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func (p *Parser) tableSection(sec *Section) error {
 		if err != nil {
 			return err
 		}
-		p.Module.Tables.Defs = append(p.Module.Tables.Defs, types.TableDef{Type: tableType})
+		p.Module.Tables.Defs = append(p.Module.Tables.Defs, IR.TableDef{Type: tableType})
 	}
 
 	err = p.validateTable()

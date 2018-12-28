@@ -1,4 +1,4 @@
-package types
+package IR
 
 type Module struct {
 	FeatureSpec *FeatureSpec

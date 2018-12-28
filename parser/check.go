@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"wasm/types"
+	"wasm/types/IR"
 )
 
 func checkConstant(rd io.Reader, constant []byte, errMsg string) error {
@@ -26,10 +27,10 @@ func checkConstant(rd io.Reader, constant []byte, errMsg string) error {
 
 func checkSection(sec *Section, orderSec byte) error {
 	if len(sec.Data) != int(sec.NumSectionBytes) {
-		return fmt.Errorf(types.ErrSectionNum, types.OrderSectionString(orderSec))
+		return fmt.Errorf(types.ErrSectionNum, IR.OrderSectionString(orderSec))
 	}
 	if orderSec != sec.Type {
-		return fmt.Errorf(types.ErrSectionType, types.OrderSectionString(orderSec))
+		return fmt.Errorf(types.ErrSectionType, IR.OrderSectionString(orderSec))
 	}
 	return nil
 }

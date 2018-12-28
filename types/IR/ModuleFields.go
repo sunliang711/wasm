@@ -1,7 +1,8 @@
-package types
+package IR
 
 import (
 	"fmt"
+	"wasm/types"
 )
 
 type RefType byte
@@ -384,6 +385,6 @@ func NewFeatureSepc() *FeatureSpec {
 		FunctionRefInstruction:              true,
 		RequireSharedFlagForAtomicOperators: false,
 		MaxLocals:                           65536,
-		MaxLabelsPerFunction:                UINT64_MAX,
+		MaxLabelsPerFunction:                types.UINT64_MAX,
 	}
 }

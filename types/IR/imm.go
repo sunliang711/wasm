@@ -1,4 +1,4 @@
-package types
+package IR
 
 type AtomicLoadOrStoreImm struct {
 	//AlignmengLog2 byte

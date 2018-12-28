@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) exportSection(sec *Section) error {
-	err := checkSection(sec, types.OrderExport)
+	err := checkSection(sec, IR.OrderExport)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (p *Parser) exportSection(sec *Section) error {
 			return err
 		}
 
-		export := types.Export{Name: string(name), Kind: types.ExternKind(kind), Index: uint64(index)}
+		export := IR.Export{Name: string(name), Kind: IR.ExternKind(kind), Index: uint64(index)}
 		p.Module.Exports = append(p.Module.Exports, export)
 		logrus.Infof("<export section> export: %v", export)
 	}

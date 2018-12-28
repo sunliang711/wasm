@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) functionDeclarationsSection(sec *Section) error {
-	err := checkSection(sec, types.OrderFunctionDeclarations)
+	err := checkSection(sec, IR.OrderFunctionDeclarations)
 	if err != nil {
 		return err
 	}
@@ -32,7 +33,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 		if int(funcTypeIndex) > len(p.Module.Types) {
 			return fmt.Errorf(types.ErrFunctionTypeIndexOutOfRange)
 		}
-		funcDef := types.FunctionDef{Type: types.IndexedFunctionType{uint64(funcTypeIndex)}}
+		funcDef := IR.FunctionDef{Type: IR.IndexedFunctionType{uint64(funcTypeIndex)}}
 		p.Module.Functions.Defs = append(p.Module.Functions.Defs, funcDef)
 		logrus.Infof("<function Declaration section> function def: %v", funcDef)
 	}

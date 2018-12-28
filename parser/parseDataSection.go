@@ -6,10 +6,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"wasm/types"
 	"wasm/utils"
+	"wasm/types/IR"
 )
 
 func (p *Parser) dataSection(sec *Section) error {
-	err := checkSection(sec, types.OrderData)
+	err := checkSection(sec, IR.OrderData)
 	if err != nil {
 		return err
 	}
@@ -22,7 +23,7 @@ func (p *Parser) dataSection(sec *Section) error {
 	}
 	//2. data items
 	for i := 0; i < int(numData); i++ {
-		dataSeg := types.DataSegment{}
+		dataSeg := IR.DataSegment{}
 		flags, err := utils.ReadByte(rd)
 		if err != nil {
 			return err
@@ -39,7 +40,7 @@ func (p *Parser) dataSection(sec *Section) error {
 		case 1:
 			dataSeg.IsActive = false
 			dataSeg.MemoryIndex = types.UINT64_MAX
-			dataSeg.BaseOffset = &types.InitializerExpression{}
+			dataSeg.BaseOffset = &IR.InitializerExpression{}
 		case 2:
 			dataSeg.IsActive = true
 			var memIndex uint32

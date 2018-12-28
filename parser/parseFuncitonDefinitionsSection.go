@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) functionDefinitionsSection(sec *Section) error {
-	err := checkSection(sec, types.OrderFunctionDefinitions)
+	err := checkSection(sec, IR.OrderFunctionDefinitions)
 	if err != nil {
 		return err
 	}
@@ -42,7 +43,7 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 			return err
 		}
 
-		var ls types.LocalSet
+		var ls IR.LocalSet
 		localSetBodyUsedBytes := 0
 		for j := 0; j < int(numLocalSets); j++ {
 			usedBytes, err := DecodeLocalSet(rd, &ls)
@@ -64,6 +65,7 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 		if err != nil {
 			return err
 		}
+		//TODO code validation
 		extendedCodes,err :=DecodeOpcodeAndImm(opcodeBytes,&funcDef)
 		if err != nil {
 			return err

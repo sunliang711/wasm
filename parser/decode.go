@@ -4,21 +4,22 @@ import (
 	"fmt"
 	"io"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
-func DecodeReferenceType(rd io.Reader) (types.RefType, error) {
+func DecodeReferenceType(rd io.Reader) (IR.RefType, error) {
 	rt, err := utils.ReadByte(rd)
 	if err != nil {
-		return types.RTInvalid, err
+		return IR.RTInvalid, err
 	}
 	switch rt {
 	case 0x70:
-		return types.RTAnyFunc, nil
+		return IR.RTAnyFunc, nil
 	case 0x6f:
-		return types.RTAnyRef, nil
+		return IR.RTAnyRef, nil
 	default:
-		return types.RTInvalid, fmt.Errorf(types.ErrReferenceTypeByte)
+		return IR.RTInvalid, fmt.Errorf(types.ErrReferenceTypeByte)
 	}
 }
 
@@ -50,27 +51,27 @@ func DecodeFlags(rd io.Reader) (bool, uint64, uint64, error) {
 	return isShared, uint64(min), max, nil
 }
 
-func DecodeTableType(rd io.Reader) (types.TableType, error) {
+func DecodeTableType(rd io.Reader) (IR.TableType, error) {
 	refType, err := DecodeReferenceType(rd)
 	if err != nil {
-		return types.TableType{}, err
+		return IR.TableType{}, err
 	}
 	isShared, min, max, err := DecodeFlags(rd)
 	if err != nil {
-		return types.TableType{}, err
+		return IR.TableType{}, err
 	}
-	return types.TableType{ElementType: refType, IsShared: isShared, Size: types.SizeConstraints{min, max}}, nil
+	return IR.TableType{ElementType: refType, IsShared: isShared, Size: IR.SizeConstraints{min, max}}, nil
 
 }
 
-func DecodeGlobalType(rd io.Reader) (types.GlobalType, error) {
+func DecodeGlobalType(rd io.Reader) (IR.GlobalType, error) {
 	var (
-		globalType types.GlobalType
+		globalType IR.GlobalType
 	)
 	// A. valueType
 	vType, err := DecodeValueTypeFromReader(rd)
 	if err != nil {
-		return types.GlobalType{}, err
+		return IR.GlobalType{}, err
 	}
 	globalType.ValType = vType
 
@@ -78,36 +79,36 @@ func DecodeGlobalType(rd io.Reader) (types.GlobalType, error) {
 	var isMutable byte
 	_, err = utils.DecodeVarInt(rd, 1, &isMutable)
 	if err != nil {
-		return types.GlobalType{}, err
+		return IR.GlobalType{}, err
 	}
 	globalType.IsMutable = isMutable != 0
 
 	return globalType, nil
 }
 
-func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
-	initExpression := types.InitializerExpression{}
+func DecodeInitializer(rd io.Reader) (IR.InitializerExpression, error) {
+	initExpression := IR.InitializerExpression{}
 
 	//1. opcode
 	opcode, err := DecodeOpcode(rd)
 	if err != nil {
 		return initExpression, err
 	}
-	initExpression.Type = types.InitializerType(opcode)
+	initExpression.Type = IR.InitializerType(opcode)
 
 	//2. switch initializer
 	switch initExpression.Type {
-	case types.I32_const:
+	case IR.I32_const:
 		_, err = utils.DecodeVarInt(rd, 32, &initExpression.I32)
 		if err != nil {
 			return initExpression, err
 		}
-	case types.I64_const:
+	case IR.I64_const:
 		_, err = utils.DecodeVarInt(rd, 64, &initExpression.I64)
 		if err != nil {
 			return initExpression, err
 		}
-	case types.F32_const:
+	case IR.F32_const:
 		f32Bytes, err := utils.ReadNByte(rd, 4)
 		if err != nil {
 			return initExpression, err
@@ -117,7 +118,7 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 			return initExpression, err
 		}
 		initExpression.F32 = f32Value
-	case types.F64_const:
+	case IR.F64_const:
 		f64Bytes, err := utils.ReadNByte(rd, 8)
 		if err != nil {
 			return initExpression, err
@@ -127,20 +128,20 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 			return initExpression, err
 		}
 		initExpression.F64 = f64Value
-	case types.V128_const:
+	case IR.V128_const:
 		v128Bytes, err := utils.ReadNByte(rd, 16)
 		if err != nil {
 			return initExpression, err
 		}
 		copy(initExpression.V128[:], v128Bytes)
-	case types.Get_global:
+	case IR.Get_global:
 		var gref uint32
 		_, err := utils.DecodeVarInt(rd, 32, &gref)
 		if err != nil {
 			return initExpression, err
 		}
 		initExpression.GlobalRef = uint64(gref)
-	case types.Ref_null:
+	case IR.Ref_null:
 	default:
 		return initExpression, fmt.Errorf(types.ErrInvalidInitializerExpressionOpcode)
 	}
@@ -157,7 +158,7 @@ func DecodeOpcode(rd io.Reader) (uint16, error) {
 		return 0, err
 	}
 	opcode = uint16(byte0)
-	if opcode > uint16(types.OPCMaxSingleByteOpcode) {
+	if opcode > uint16(IR.OPCMaxSingleByteOpcode) {
 		byte1, err := utils.ReadByte(rd)
 		if err != nil {
 			return 0, err
@@ -168,7 +169,7 @@ func DecodeOpcode(rd io.Reader) (uint16, error) {
 	return opcode, nil
 }
 
-func DecodeLocalSet(rd io.Reader, ls *types.LocalSet) (int, error) {
+func DecodeLocalSet(rd io.Reader, ls *IR.LocalSet) (int, error) {
 	if ls == nil {
 		return 0, fmt.Errorf(types.ErrInvalidParameter)
 	}

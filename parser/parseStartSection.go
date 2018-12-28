@@ -3,12 +3,12 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) startSection(sec *Section) error {
-	err := checkSection(sec, types.OrderStart)
+	err := checkSection(sec, IR.OrderStart)
 	if err != nil {
 		return err
 	}

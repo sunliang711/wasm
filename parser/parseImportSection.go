@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) importSection(sec *Section) error {
-	err := checkSection(sec, types.OrderImport)
+	err := checkSection(sec, IR.OrderImport)
 	if err != nil {
 		return err
 	}
@@ -47,11 +48,11 @@ func (p *Parser) importSection(sec *Section) error {
 		if n != len(bufKind) {
 			return fmt.Errorf(utils.ErrInsufficientChar)
 		}
-		kind := types.ExternKind(bufKind[0])
+		kind := IR.ExternKind(bufKind[0])
 
 		//4. switch kind
 		switch kind {
-		case types.Function:
+		case IR.Function:
 			//function type index(of type section)
 			var funcTypeIndex uint32
 			_, err := utils.DecodeVarInt(rd, 32, &funcTypeIndex)
@@ -63,72 +64,72 @@ func (p *Parser) importSection(sec *Section) error {
 			if int(funcTypeIndex) >= len(p.Module.Types) {
 				return fmt.Errorf(types.ErrFunctionTypeIndexOutOfRange)
 			}
-			imIndexFuncType := types.ImportIndexedFunctionType{
-				Type: types.IndexedFunctionType{Index: uint64(funcTypeIndex)},
-				ImportCommon: types.ImportCommon{
+			imIndexFuncType := IR.ImportIndexedFunctionType{
+				Type: IR.IndexedFunctionType{Index: uint64(funcTypeIndex)},
+				ImportCommon: IR.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				},
 			}
 			p.Module.Functions.Imports = append(p.Module.Functions.Imports, imIndexFuncType)
 			logrus.Infof("<import section> type: function, function type: %v", imIndexFuncType)
-		case types.Table:
+		case IR.Table:
 			tableType, err := DecodeTableType(rd)
 			if err != nil {
 				return err
 			}
-			imTableType := types.ImportTableType{
+			imTableType := IR.ImportTableType{
 				Type: tableType,
-				ImportCommon: types.ImportCommon{
+				ImportCommon: IR.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				}}
 			p.Module.Tables.Imports = append(p.Module.Tables.Imports, imTableType)
 			logrus.Infof("<import section> type: table, table type: %v", imTableType)
 
-		case types.Memory:
+		case IR.Memory:
 			var (
-				memoryType types.MemoryType
+				memoryType IR.MemoryType
 			)
 			memoryType.IsShared, memoryType.Size.Min, memoryType.Size.Max, err = DecodeFlags(rd)
 			if err != nil {
 				return err
 			}
-			imMemoryType := types.ImportMemoryType{
+			imMemoryType := IR.ImportMemoryType{
 				Type: memoryType,
-				ImportCommon: types.ImportCommon{
+				ImportCommon: IR.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				}}
 			logrus.Infof("<import section> type: memory, memory type: %v", imMemoryType)
 			p.Module.Memories.Imports = append(p.Module.Memories.Imports, imMemoryType)
 
-		case types.Global:
+		case IR.Global:
 			globalType, err := DecodeGlobalType(rd)
 			if err != nil {
 				return err
 			}
-			imGlobalType := types.ImportGlobalType{
+			imGlobalType := IR.ImportGlobalType{
 				Type: globalType,
-				ImportCommon: types.ImportCommon{
+				ImportCommon: IR.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				}}
 			logrus.Infof("<import section> type: global, global type: %v", imGlobalType)
 			p.Module.Globals.Imports = append(p.Module.Globals.Imports, imGlobalType)
 
-		case types.Exception:
+		case IR.Exception:
 			var (
-				exceptionType types.ExceptionType
+				exceptionType IR.ExceptionType
 			)
 			err := DecodeTypeTuple(rd, &exceptionType.Params)
 			if err != nil {
 				return err
 			}
 
-			imExceptionType := types.ImportExceptionType{
+			imExceptionType := IR.ImportExceptionType{
 				Type: exceptionType,
-				ImportCommon: types.ImportCommon{
+				ImportCommon: IR.ImportCommon{
 					ModuleName: string(moduleName),
 					ExportName: string(exportName),
 				}}

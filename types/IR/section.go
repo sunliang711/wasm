@@ -1,6 +1,9 @@
-package types
+package IR
 
-import "fmt"
+import (
+	"fmt"
+	"wasm/types"
+)
 
 type RawSecType byte
 
@@ -77,7 +80,7 @@ var (
 func SectionType2Order(rawSec RawSecType) (byte, error) {
 	orderSec, ok := sectionType2Order[rawSec]
 	if !ok {
-		return OrderUnknown, fmt.Errorf(ErrUnknownSection, rawSec)
+		return OrderUnknown, fmt.Errorf(types.ErrUnknownSection, rawSec)
 	}
 	return orderSec, nil
 }

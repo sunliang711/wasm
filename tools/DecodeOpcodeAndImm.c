@@ -5,26 +5,26 @@ import(
 	"bytes"
 	"encoding/binary"
 	"io"
-	"wasm/types"
+	"wasm/types/IR"
 )
 
 #define VISIT_OPCODE(OPCODE,NAME,NAMESTRING,IMM,...) \
-    		case types.NAME: \
-    			imm := types.IMM{}; \
+    		case IR.NAME: \
+    			imm := IR.IMM{}; \
     			err = Decode##IMM(rd, &imm, funcDef); \
     			if err != nil { \
     				return nil, err; \
     			}; \
-    			opimm := types.OpcodeAndImm_##IMM{}; \
+    			opimm := IR.OpcodeAndImm_##IMM{}; \
     			opimm.Imm = imm; \
-    			opimm.Opcode = types.NAME; \
+    			opimm.Opcode = IR.NAME; \
     			err = binary.Write(&buf, binary.LittleEndian, &opimm); \
     			if err != nil { \
     				return nil, err; \
     			}; \
     			ret = append(ret, buf.Bytes()...);
 
-func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte, error) {
+func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]byte, error) {
 	rd := bytes.NewReader(opcodeBytes)
 	var ret []byte
 
@@ -37,7 +37,7 @@ func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte,
 			return nil, err
 		}
 		var buf bytes.Buffer
-		switch types.Opcode(opc) {
+		switch IR.Opcode(opc) {
 ENUM_OPERATORS(VISIT_OPCODE)
 		}
 	}

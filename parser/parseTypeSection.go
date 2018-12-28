@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -20,13 +21,13 @@ func (p *Parser) typeSection(sec *Section) error {
 		p.typeParsed <- struct{}{}
 	}()
 
-	err := checkSection(sec, types.OrderType)
+	err := checkSection(sec, IR.OrderType)
 	if err != nil {
 		return err
 	}
 
 	var (
-		functionType types.FunctionType
+		functionType IR.FunctionType
 	)
 
 	rd := bytes.NewReader(sec.Data)
@@ -45,14 +46,14 @@ func (p *Parser) typeSection(sec *Section) error {
 		}
 
 		// 2. params (of function)
-		paramTuple := &types.TypeTuple{}
+		paramTuple := &IR.TypeTuple{}
 		err = DecodeTypeTuple(rd, paramTuple)
 		if err != nil {
 			return err
 		}
 
 		// 3. results (of function)
-		resultTuple := &types.TypeTuple{}
+		resultTuple := &IR.TypeTuple{}
 		err = DecodeTypeTuple(rd, resultTuple)
 		if err != nil {
 			return err
@@ -66,7 +67,7 @@ func (p *Parser) typeSection(sec *Section) error {
 	return err
 }
 
-func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
+func DecodeTypeTuple(rd io.Reader, tuple *IR.TypeTuple) error {
 	// 1. count of params (or results)
 	var n uint32
 	_, err := utils.DecodeVarInt(rd, 32, &n)
@@ -91,33 +92,33 @@ func (p *Parser) ValidateTypes() error {
 	return nil
 }
 
-func DecodeValueTypeFromReader(rd io.Reader) (types.ValueType, error) {
+func DecodeValueTypeFromReader(rd io.Reader) (IR.ValueType, error) {
 	var vType int8
 	_, err := utils.DecodeVarInt(rd, 7, &vType)
 	if err != nil {
-		return types.TypeNone, err
+		return IR.TypeNone, err
 	}
 	return DecodeValueType(vType)
 }
 
-func DecodeValueType(vt int8) (types.ValueType,error)  {
+func DecodeValueType(vt int8) (IR.ValueType,error)  {
 	switch vt {
 	case -1:
-		return types.TypeI32, nil
+		return IR.TypeI32, nil
 	case -2:
-		return types.TypeI64, nil
+		return IR.TypeI64, nil
 	case -3:
-		return types.TypeF32, nil
+		return IR.TypeF32, nil
 	case -4:
-		return types.TypeF64, nil
+		return IR.TypeF64, nil
 	case -5:
-		return types.TypeV128, nil
+		return IR.TypeV128, nil
 	case -16:
-		return types.TypeAnyFunc, nil
+		return IR.TypeAnyFunc, nil
 	case -17:
-		return types.TypeAnyRef, nil
+		return IR.TypeAnyRef, nil
 	default:
-		return types.TypeNone, fmt.Errorf(types.ErrInvalidValueType)
+		return IR.TypeNone, fmt.Errorf(IR.ErrInvalidValueType)
 	}
 
 }

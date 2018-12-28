@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"wasm/types"
+	"wasm/types/IR"
 	"wasm/utils"
 )
 
 func (p *Parser) elemSection(sec *Section) error {
-	err := checkSection(sec, types.OrderElem)
+	err := checkSection(sec, IR.OrderElem)
 	if err != nil {
 		return err
 	}
@@ -24,7 +25,7 @@ func (p *Parser) elemSection(sec *Section) error {
 
 	//2. eles
 	for i := 0; i < int(numEle); i++ {
-		eleSeg := types.ElemSegment{}
+		eleSeg := IR.ElemSegment{}
 		flags, err := utils.ReadByte(rd)
 		if err != nil {
 			return err
@@ -41,7 +42,7 @@ func (p *Parser) elemSection(sec *Section) error {
 		case 1:
 			eleSeg.IsActive = false
 			eleSeg.TableIndex = types.UINT64_MAX
-			eleSeg.BaseOffset = &types.InitializerExpression{}
+			eleSeg.BaseOffset = &IR.InitializerExpression{}
 		case 2:
 			eleSeg.IsActive = true
 			var tabIndex uint32
