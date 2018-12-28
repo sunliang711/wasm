@@ -1,5 +1,6 @@
 #include "imm.h"
 package types
+//Note this file is created by makeTypes.sh,Don't modify this file directly
 
 #define visit_imm(imm) \
         type OpcodeAndImm ##_## imm struct{ \

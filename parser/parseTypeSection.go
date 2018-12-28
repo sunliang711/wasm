@@ -76,7 +76,7 @@ func DecodeTypeTuple(rd io.Reader, tuple *types.TypeTuple) error {
 	tuple.NumElems = n
 	// 2. params (or results) array
 	for i := 0; i < int(n); i++ {
-		valueType, err := DecodeValueType(rd)
+		valueType, err := DecodeValueTypeFromReader(rd)
 		if err != nil {
 			return err
 		}
@@ -91,14 +91,17 @@ func (p *Parser) ValidateTypes() error {
 	return nil
 }
 
-func DecodeValueType(rd io.Reader) (types.ValueType, error) {
+func DecodeValueTypeFromReader(rd io.Reader) (types.ValueType, error) {
 	var vType int8
 	_, err := utils.DecodeVarInt(rd, 7, &vType)
 	if err != nil {
 		return types.TypeNone, err
 	}
+	return DecodeValueType(vType)
+}
 
-	switch vType {
+func DecodeValueType(vt int8) (types.ValueType,error)  {
+	switch vt {
 	case -1:
 		return types.TypeI32, nil
 	case -2:
@@ -116,4 +119,5 @@ func DecodeValueType(rd io.Reader) (types.ValueType, error) {
 	default:
 		return types.TypeNone, fmt.Errorf(types.ErrInvalidValueType)
 	}
+
 }

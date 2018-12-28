@@ -38,4 +38,12 @@ const (
 	ErrFuncDeclarationDefinitionMismatch = "Function declaration doesn't match definition"
 
 	ErrTooManyLocals = "Too many locals"
+
+
+	ErrIndexMapFull = "IndexMap is full"
+	ErrIndexMapLastIndexOutOfRange = "IndexMap lastIndex out of range"
+	ErrIndexExist = "IndexMap index already exist"
+	ErrIndexNotExist = "IndexMap index not exist"
+
+	ErrBranchTableIndexOutOfRange = "Branch table index out of range"
 )

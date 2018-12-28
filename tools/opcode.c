@@ -1,6 +1,7 @@
 package types
 #include "OperatorTable.h"
 
+//Note this file is created by makeTypes.sh,Don't modify this file directly
 type Opcode uint16
 
 const (

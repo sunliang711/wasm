@@ -64,31 +64,11 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 		if err != nil {
 			return err
 		}
-		funcDef.Code = opcodeBytes
-		//TODO
-		// Deserialize the function code, validate it, and re-encode it in the IR format.
-//		ArrayOutputStream irCodeByteStream;
-//		OperatorEncoderStream irEncoderStream(irCodeByteStream);
-//		CodeValidationStream codeValidationStream(module, functionDef, deferredCodeValidationState);
-//		while(bodyStream.capacity())
-//		{
-//			Opcode opcode;
-//			serializeOpcode(bodyStream, opcode);
-//			switch(opcode)
-//			{
-//				#define VISIT_OPCODE(_, name, nameString, Imm, ...)                                                \
-//case Opcode::name:                                                                             \
-//{                                                                                              \
-//Imm imm;                                                                                   \
-//serialize(bodyStream, imm, functionDef);                                                   \
-//codeValidationStream.name(imm);                                                            \
-//irEncoderStream.name(imm);                                                                 \
-//break;                                                                                     \
-//}
-//ENUM_OPERATORS(VISIT_OPCODE)
-//#undef VISIT_OPCODE
-//default: throw FatalSerializationException("unknown opcode");
-//};
+		extendedCodes,err :=DecodeOpcodeAndImm(opcodeBytes,&funcDef)
+		if err != nil {
+			return err
+		}
+		funcDef.Code = extendedCodes
 		p.Module.Functions.Defs[i] = funcDef
 		logrus.Infof("<function definition> function definition: %v", funcDef)
 	}

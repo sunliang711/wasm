@@ -61,3 +61,5 @@ func (p *Parser) dataSection(sec *Section) error {
 	}
 	return nil
 }
+
+//decodeXXXImm

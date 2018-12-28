@@ -1,7 +1,8 @@
 package types
 
 type AtomicLoadOrStoreImm struct {
-	AlignmengLog2 byte
+	//AlignmengLog2 byte
+	AlignmengLog2 uint32
 	Offset        uint32
 }
 type BranchImm struct {
@@ -24,8 +25,10 @@ const (
 )
 
 type IndexedBlockedType struct {
-	Format
-	ResultType ValueType
+	//Format
+	//ResultType ValueType
+	Format     uint32
+	ResultType uint32
 	Index      uint64
 }
 type ControlStructureImm struct {
@@ -73,7 +76,8 @@ type LiteralImm_V128 struct {
 	Value [16]byte
 }
 type LoadOrStoreImm struct {
-	AlignmentLog2 byte
+	//AlignmentLog2 byte
+	AlignmentLog2 uint32
 	Offset        uint32
 }
 type MemoryImm struct {

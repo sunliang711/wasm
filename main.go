@@ -38,5 +38,4 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(parser.Parse())
-
 }

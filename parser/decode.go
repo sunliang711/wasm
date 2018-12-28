@@ -68,7 +68,7 @@ func DecodeGlobalType(rd io.Reader) (types.GlobalType, error) {
 		globalType types.GlobalType
 	)
 	// A. valueType
-	vType, err := DecodeValueType(rd)
+	vType, err := DecodeValueTypeFromReader(rd)
 	if err != nil {
 		return types.GlobalType{}, err
 	}
@@ -148,22 +148,22 @@ func DecodeInitializer(rd io.Reader) (types.InitializerExpression, error) {
 	return initExpression, nil
 }
 
-func DecodeOpcode(rd io.Reader) (int16, error) {
+func DecodeOpcode(rd io.Reader) (uint16, error) {
 	var (
-		opcode int16
+		opcode uint16
 	)
 	byte0, err := utils.ReadByte(rd)
 	if err != nil {
 		return 0, err
 	}
-	opcode = int16(byte0)
-	if opcode > int16(types.OPCMaxSingleByteOpcode) {
+	opcode = uint16(byte0)
+	if opcode > uint16(types.OPCMaxSingleByteOpcode) {
 		byte1, err := utils.ReadByte(rd)
 		if err != nil {
 			return 0, err
 		}
 		opcode = opcode << 8
-		opcode = opcode | int16(byte1)
+		opcode = opcode | uint16(byte1)
 	}
 	return opcode, nil
 }
@@ -181,7 +181,7 @@ func DecodeLocalSet(rd io.Reader, ls *types.LocalSet) (int, error) {
 	ls.Num = uint64(num)
 
 	// 1 byte
-	vType, err := DecodeValueType(rd)
+	vType, err := DecodeValueTypeFromReader(rd)
 	if err != nil {
 		return 0, err
 	}
@@ -190,3 +190,37 @@ func DecodeLocalSet(rd io.Reader, ls *types.LocalSet) (int, error) {
 	//used n + 1 bytes in total
 	return n + 1, nil
 }
+//func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte, error) {
+//	rd := bytes.NewReader(opcodeBytes)
+//	var ret []byte
+//
+//	for {
+//		opc, err := DecodeOpcode(rd)
+//		if err == io.EOF {
+//			break
+//		}
+//		if err != nil {
+//			return nil, err
+//		}
+//		var buf bytes.Buffer
+//		switch types.Opcode(opc) {
+//		case types.OPCbr: //
+//			imm := types.BranchImm{}//
+//			err = DecodeBranchImm(rd, &imm, funcDef)//
+//			if err != nil {
+//				return nil, err
+//			}
+//			opimm := types.OpcodeAndImm_BranchImm{}//
+//			opimm.Imm = imm
+//			opimm.Opcode = types.OPCbr//
+//			err = binary.Write(&buf, binary.LittleEndian, &opimm)
+//			if err != nil {
+//				return nil, err
+//			}
+//			ret = append(ret, buf.Bytes()...)
+//
+//		case types.OPCbr_if:
+//		}
+//	}
+//	return ret, nil
+//}
