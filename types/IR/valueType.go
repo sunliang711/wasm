@@ -14,12 +14,13 @@ const (
 	TypeAnyFunc
 	TypeNullRef
 	TypeNum
-	TypeMax = TypeNum - TypeNone
+	TypeIns
 )
 
 const (
 	ErrInvalidValueType = "Invalid value type"
 )
+
 
 func (vt ValueType) String() string {
 	switch vt {

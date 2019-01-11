@@ -159,6 +159,8 @@ type FunctionDef struct {
 	NonParameterLocalTypes []ValueType
 	Code                   []byte
 	BranchTables           [][]uint64
+	Instruction            []Instruction
+	EndIndice              []int
 }
 
 func (f FunctionDef) String() string {

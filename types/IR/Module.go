@@ -17,6 +17,8 @@ type Module struct {
 	UserSections []UserSection
 
 	StartFunctionIndex int
+
+	//TODO: Add all export function names array
 }
 
 func (m Module) String() string {

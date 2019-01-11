@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"wasm/types"
-	"wasm/utils"
 	"wasm/types/IR"
+	"wasm/utils"
 )
 
 func (p *Parser) dataSection(sec *Section) error {
@@ -57,6 +57,18 @@ func (p *Parser) dataSection(sec *Section) error {
 		default:
 			return fmt.Errorf(types.ErrInvalidDataSegFlags)
 		}
+		// init data size
+		var numInit int
+		_, err = utils.DecodeVarInt(rd, 32, &numInit)
+		if err != nil {
+			return err
+		}
+		initData,err := utils.ReadNByte(rd,numInit)
+		if err != nil {
+			return err
+		}
+		dataSeg.Data = initData
+
 		p.Module.DataSegments = append(p.Module.DataSegments, dataSeg)
 		logrus.Infof("<data section> data segment: %v", dataSeg)
 	}

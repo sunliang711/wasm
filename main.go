@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	inputfile := "helloworld.wasm"
+	//inputfile := "helloworld.wasm"
+	inputfile := "/Users/eagle/Downloads/add2.wasm"
 	//rdr ,err:= parser.LoadBinary(inputfile)
 	//if err != nil{
 	//	fmt.Println(err)

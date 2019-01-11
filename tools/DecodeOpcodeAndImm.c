@@ -3,7 +3,6 @@ package parser
 //Note this file is created by makeTypes.sh,Don't modify this file directly
 import(
 	"bytes"
-	"encoding/binary"
 	"io"
 	"wasm/types/IR"
 )
@@ -13,20 +12,16 @@ import(
     			imm := IR.IMM{}; \
     			err = Decode##IMM(rd, &imm, funcDef); \
     			if err != nil { \
-    				return nil, err; \
+    				return nil,nil, err; \
     			}; \
-    			opimm := IR.OpcodeAndImm_##IMM{}; \
-    			opimm.Imm = imm; \
-    			opimm.Opcode = IR.NAME; \
-    			err = binary.Write(&buf, binary.LittleEndian, &opimm); \
-    			if err != nil { \
-    				return nil, err; \
-    			}; \
-    			ret = append(ret, buf.Bytes()...);
+                ins = append(ins, IR.Instruction{&IR.Ops[IR.NAME], &imm, codeIndex});
 
-func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]byte, error) {
+func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]IR.Instruction,[]int, error) {
 	rd := bytes.NewReader(opcodeBytes)
-	var ret []byte
+    var (
+        ins       []IR.Instruction
+        codeIndex int
+    	)
 
 	for {
 		opc, err := DecodeOpcode(rd)
@@ -34,14 +29,48 @@ func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]byte, er
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil,nil, err
 		}
-		var buf bytes.Buffer
 		switch IR.Opcode(opc) {
 ENUM_OPERATORS(VISIT_OPCODE)
 		}
+		codeIndex += 1
 	}
-	return ret, nil
+		if ins[len(ins)-1].Op.Code != IR.OPCend {
+    		return nil, nil,fmt.Errorf("code not end with \"end\"")
+    	}
+
+    	stack := IR.Stack{}
+    	endIndice := make([]int, 0)
+    	beginPush := false
+    	for _, instr := range ins[:len(ins)-1] {
+    		switch instr.Op.Code {
+    		case IR.OPCloop, IR.OPCif_, IR.OPCblock:
+    			beginPush = true
+    			stack.Push(&instr)
+    		case IR.OPCend:
+    			endIndice = append(endIndice, instr.Index)
+    			for {
+    				i, err := stack.Pop()
+    				if err != nil {
+    					return nil, nil, fmt.Errorf("Stack pop failed")
+    				}
+    				switch i.Value().(*IR.Instruction).Op.Code {
+    				case IR.OPCloop, IR.OPCif_, IR.OPCblock:
+    					break
+    				}
+    			}
+
+    		default:
+    			if beginPush {
+    				stack.Push(&instr)
+    			}
+    		}
+    	}
+    	if !stack.Empty() {
+    		return nil, nil, fmt.Errorf("instructions end count not match")
+    	}
+    	return ins, endIndice, nil
 }
 
 #undef VISIT_OPCODE

@@ -145,6 +145,10 @@ func DecodeInitializer(rd io.Reader) (IR.InitializerExpression, error) {
 	default:
 		return initExpression, fmt.Errorf(types.ErrInvalidInitializerExpressionOpcode)
 	}
+	endOp,err := utils.ReadByte(rd)
+	if err != nil || IR.Opcode(endOp) != IR.OPCend{
+		return initExpression,fmt.Errorf("initialzer end error")
+	}
 
 	return initExpression, nil
 }

@@ -31,3 +31,40 @@ const (
 	Max     = 4
 	Invalid = 0xff
 )
+
+type ExternType struct {
+	Kind ExternKind
+
+	Function *FunctionType
+	Table    *TableType
+	Memory   *MemoryType
+	*ExceptionType
+}
+
+func ExternTypeF(f *FunctionType) *ExternType {
+	return &ExternType{
+		Kind:     Function,
+		Function: f,
+	}
+}
+
+func ExternTypeT(t *TableType) *ExternType {
+	return &ExternType{
+		Kind:  Table,
+		Table: t,
+	}
+}
+
+func ExternTypeM(m *MemoryType) *ExternType {
+	return &ExternType{
+		Kind:   Memory,
+		Memory: m,
+	}
+}
+
+func ExternTypeE(e *ExceptionType) *ExternType {
+	return &ExternType{
+		Kind:          Exception,
+		ExceptionType: e,
+	}
+}

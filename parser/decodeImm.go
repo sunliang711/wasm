@@ -18,18 +18,18 @@ func DecodeControlStructureImm(rd io.Reader, imm *IR.ControlStructureImm, funcDe
 	}
 	switch {
 	case encodedBlockType >= 0:
-		imm.Type.Format = uint32(IR.FormatFunctionType)
+		imm.Type.Format = IR.FormatFunctionType
 		imm.Type.Index = uint64(encodedBlockType)
 	case encodedBlockType == -64:
-		imm.Type.Format = uint32(IR.FormatNoParametersOrResult)
-		imm.Type.ResultType = uint32(IR.TypeAny)
+		imm.Type.Format = IR.FormatNoParametersOrResult
+		imm.Type.ResultType = IR.TypeAny
 	default:
-		imm.Type.Format = uint32(IR.FormatOneResult)
+		imm.Type.Format = IR.FormatOneResult
 		vt, err := DecodeValueType(int8(encodedBlockType))
 		if err != nil {
 			return err
 		}
-		imm.Type.ResultType = uint32(vt)
+		imm.Type.ResultType = vt
 
 	}
 	return nil
@@ -59,7 +59,7 @@ func DecodeAtomicLoadOrStoreImm(rd io.Reader, imm *IR.AtomicLoadOrStoreImm, func
 		return err
 	}
 
-	imm.AlignmengLog2 = uint32(align)
+	imm.AlignmengLog2 = align
 	imm.Offset = uint32(offset)
 	return nil
 }
@@ -215,7 +215,7 @@ func DecodeLoadOrStoreImm(rd io.Reader, imm *IR.LoadOrStoreImm, funcDef *IR.Func
 	if err != nil {
 		return err
 	}
-	imm.AlignmentLog2 = uint32(alignment)
+	imm.AlignmentLog2 = alignment
 	imm.Offset = offset
 
 	return nil

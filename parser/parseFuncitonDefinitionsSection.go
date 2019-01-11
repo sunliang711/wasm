@@ -65,12 +65,20 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 		if err != nil {
 			return err
 		}
-		//TODO code validation
-		extendedCodes,err :=DecodeOpcodeAndImm(opcodeBytes,&funcDef)
+		////TODO code validation
+		//extendedCodes, err := DecodeOpcodeAndImm(opcodeBytes, &funcDef)
+		//if err != nil {
+		//	return err
+		//}
+		//funcDef.Code = extendedCodes
+		funcDef.Code = opcodeBytes
+		ins, endIndice, err := DecodeOpcodeAndImm(opcodeBytes, &funcDef)
 		if err != nil {
-			return err
+			return nil
 		}
-		funcDef.Code = extendedCodes
+		funcDef.Instruction = ins
+		funcDef.EndIndice = endIndice
+
 		p.Module.Functions.Defs[i] = funcDef
 		logrus.Infof("<function definition> function definition: %v", funcDef)
 	}
