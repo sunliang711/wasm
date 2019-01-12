@@ -169,6 +169,7 @@ func (p *Parser) eventLoop() error {
 
 		case <-p.ChDone:
 			p.Wg.Wait()
+			p.Post()
 			logrus.Infof("Parse done.")
 			//TODO
 			//p.validateDataSegments()
@@ -224,4 +225,13 @@ func (p *Parser) Stop() {
 
 func (p *Parser) NotifyError(err error) {
 	p.ChErr <- err
+}
+
+func (p *Parser) Post() {
+	importFunLen := uint64(len(p.Module.Functions.Imports))
+	for _, e := range p.Module.ExportFunctions {
+		if e.Index >= importFunLen {
+			p.Module.Functions.Defs[e.Index-importFunLen].Name = e.Name
+		}
+	}
 }

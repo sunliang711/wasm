@@ -39,11 +39,16 @@ const (
 
 	ErrTooManyLocals = "Too many locals"
 
-
-	ErrIndexMapFull = "IndexMap is full"
+	ErrIndexMapFull                = "IndexMap is full"
 	ErrIndexMapLastIndexOutOfRange = "IndexMap lastIndex out of range"
-	ErrIndexExist = "IndexMap index already exist"
-	ErrIndexNotExist = "IndexMap index not exist"
+	ErrIndexExist                  = "IndexMap index already exist"
+	ErrIndexNotExist               = "IndexMap index not exist"
 
 	ErrBranchTableIndexOutOfRange = "Branch table index out of range"
+
+	ErrStackSizeErr = "Stack size error"
+	ErrDivideByZero = "Divide by zero"
+
+	ErrFuncNotFound  = "Function not found by exported name"
+	ErrTypeAssertion = "Type assertion error: %v"
 )

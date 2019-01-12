@@ -2,7 +2,9 @@ package runtime
 
 import (
 	"fmt"
+	"wasm/types"
 	"wasm/types/IR"
+	"wasm/utils"
 )
 
 func IsZero(v IR.InterfaceValue) bool {
@@ -20,19 +22,31 @@ func IsZero(v IR.InterfaceValue) bool {
 	}
 }
 
-func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
+func (vm *VM) Run(funcName string, funcIndex int, params []IR.InterfaceValue) (err error) {
+	//TODO check all type assertion
+	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()
 	if frame == nil {
-		return fmt.Errorf("Frame stack overflow.")
+		vm.panic("Frame stack overflow.")
 	}
-	frame.Init(funcIndex, vm, params)
+	// enable funcName,if funcIndex < 0
+	if funcIndex < 0 {
+		funcIndex, err = vm.Module.GetFuncIndexWithName(funcName)
+		if err != nil {
+			vm.panic(err)
+		}
+	}
+	err = frame.Init(funcIndex, vm, params)
+	if err != nil {
+		vm.panic(err)
+	}
 	//Execute
 	for {
 		ins := frame.Instruction[frame.PC]
 
 		switch ins.Op.Code {
 		case IR.OPCunreachable:
-			return fmt.Errorf("unreachable executed")
+			vm.panic("unreachable executed")
 		case IR.OPCbr:
 		case IR.OPCbr_if:
 		case IR.OPCbr_table:
@@ -40,35 +54,54 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCcall:
 		case IR.OPCcall_indirect:
 		case IR.OPCdrop:
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			frame.Stack.Pop()
+			frame.advance(1)
 		case IR.OPCselect:
-			a, err := frame.Stack.Pop()
-			if err != nil {
-				return err
+			if frame.Stack.Len() < 3 {
+				vm.panic(types.ErrStackSizeErr)
 			}
-			b, err := frame.Stack.Pop()
-			if err != nil {
-				return err
-			}
-			c, err := frame.Stack.Pop()
-			if err != nil {
-				return err
-			}
+			a, _ := frame.Stack.Pop()
+			b, _ := frame.Stack.Pop()
+			c, _ := frame.Stack.Pop()
 			if IsZero(c) {
 				frame.Stack.Push(b)
 			} else {
 				frame.Stack.Push(a)
 			}
-			frame.PC += 1
+			frame.advance(1)
 
 		case IR.OPCget_local:
 			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
 			if index >= uint64(len(frame.Locals)) {
-				return fmt.Errorf("get_local index out of range")
+				vm.panic("get_local index out of range")
 			}
 			frame.Stack.Push(frame.Locals[index])
-			frame.PC += 1
+			frame.advance(1)
 		case IR.OPCset_local:
+			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			if index >= uint64(len(frame.Locals)) {
+				vm.panic("set_local index out of range")
+			}
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			a, _ := frame.Stack.Pop()
+			frame.Locals[index] = a
+			frame.advance(1)
 		case IR.OPCtee_local:
+			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			if index >= uint64(len(frame.Locals)) {
+				vm.panic("tee_local index out of range")
+			}
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			a, _ := frame.Stack.Top()
+			frame.Locals[index] = a
+			frame.advance(1)
 		case IR.OPCget_global:
 		case IR.OPCset_global:
 		case IR.OPCtable_get:
@@ -76,6 +109,7 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCthrow_:
 		case IR.OPCrethrow:
 		case IR.OPCnop:
+			frame.advance(1)
 		case IR.OPCi32_load:
 		case IR.OPCi64_load:
 		case IR.OPCf32_load:
@@ -104,20 +138,151 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCi32_const:
 			val := ins.Imm.(*IR.LiteralImm_I32).Value
 			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: val})
+			frame.advance(1)
 		case IR.OPCi64_const:
+			val := ins.Imm.(*IR.LiteralImm_I64).Value
+			frame.Stack.Push(&Value{IR.TypeI64, val})
+			frame.advance(1)
 		case IR.OPCf32_const:
+			val := ins.Imm.(*IR.LiteralImm_F32).Value
+			frame.Stack.Push(&Value{IR.TypeF32, val})
+			frame.advance(1)
 		case IR.OPCf64_const:
+			val := ins.Imm.(*IR.LiteralImm_F64).Value
+			frame.Stack.Push(&Value{IR.TypeF64, val})
+			frame.advance(1)
 		case IR.OPCi32_eqz:
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) == 0 {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_eq:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) == b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_ne:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) != b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_lt_s:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) < b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_lt_u:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(uint32) < b.Value().(uint32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_gt_s:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) > b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_gt_u:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(uint32) > b.Value().(uint32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_le_s:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) <= b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_le_u:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(uint32) <= b.Value().(uint32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_ge_s:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(int32) >= b.Value().(int32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
 		case IR.OPCi32_ge_u:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			if a.Value().(uint32) >= b.Value().(uint32) {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+			} else {
+				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+			}
+			frame.advance(1)
+
 		case IR.OPCi64_eqz:
 		case IR.OPCi64_eq:
 		case IR.OPCi64_ne:
@@ -129,6 +294,7 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCi64_le_u:
 		case IR.OPCi64_ge_s:
 		case IR.OPCi64_ge_u:
+
 		case IR.OPCf32_eq:
 		case IR.OPCf32_ne:
 		case IR.OPCf32_lt:
@@ -141,27 +307,61 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCf64_gt:
 		case IR.OPCf64_le:
 		case IR.OPCf64_ge:
+
 		case IR.OPCi32_clz:
 		case IR.OPCi32_ctz:
 		case IR.OPCi32_popcnt:
 		case IR.OPCi32_add:
-			a, err := frame.Stack.Pop()
-			if err != nil {
-				return err
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
 			}
-			b, err := frame.Stack.Pop()
-			if err != nil {
-				return err
-			}
-			fmt.Println(a.Value())
-			fmt.Println(b.Value())
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
 			c := a.Value().(int32) + b.Value().(int32)
 			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
-			frame.PC += 1
+			frame.advance(1)
 		case IR.OPCi32_sub:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(int32) - b.Value().(int32)
+			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
+			frame.advance(1)
 		case IR.OPCi32_mul:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(int32) * b.Value().(int32)
+			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
+			frame.advance(1)
 		case IR.OPCi32_div_s:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			if b.Value().(int32) == 0 {
+				vm.panic(types.ErrDivideByZero)
+			}
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(int32) / b.Value().(int32)
+			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: int32(c)})
+			frame.advance(1)
 		case IR.OPCi32_div_u:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			if b.Value().(uint32) == 0 {
+				vm.panic(types.ErrDivideByZero)
+			}
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(uint32) / b.Value().(uint32)
+			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: uint32(c)})
+			frame.advance(1)
 		case IR.OPCi32_rem_s:
 		case IR.OPCi32_rem_u:
 		case IR.OPCi32_and_:
@@ -198,9 +398,33 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCf32_nearest:
 		case IR.OPCf32_sqrt:
 		case IR.OPCf32_add:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(float32) + b.Value().(float32)
+			frame.Stack.Push(&Value{Typ: IR.TypeF32, Val: c})
+			frame.advance(1)
 		case IR.OPCf32_sub:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(float32) - b.Value().(float32)
+			frame.Stack.Push(&Value{Typ: IR.TypeF32, Val: c})
+			frame.advance(1)
 		case IR.OPCf32_mul:
 		case IR.OPCf32_div:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			v := a.Value().(float32) / b.Value().(float32)
+			frame.Stack.Push(&Value{IR.TypeF32, v})
+			frame.advance(1)
 		case IR.OPCf32_min:
 		case IR.OPCf32_max:
 		case IR.OPCf32_copysign:
@@ -231,6 +455,17 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCi64_trunc_u_f64:
 		case IR.OPCf32_convert_s_i32:
 		case IR.OPCf32_convert_u_i32:
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			a, _ := frame.Stack.Pop()
+			m, ok := a.Value().(uint32)
+			if !ok {
+				vm.panic(fmt.Sprintf(types.ErrTypeAssertion, "uint32"))
+			}
+			v := float32(m)
+			frame.Stack.Push(&Value{IR.TypeF32, v})
+			frame.advance(1)
 		case IR.OPCf32_convert_s_i64:
 		case IR.OPCf32_convert_u_i64:
 		case IR.OPCf32_demote_f64:
@@ -477,21 +712,23 @@ func (vm *VM) Run(funcIndex int, params []IR.InterfaceValue) error {
 		case IR.OPCif_:
 		case IR.OPCelse_:
 		case IR.OPCend:
+			//the last opcode
 			if ins.Index == len(frame.Instruction)-1 {
 				if !frame.Stack.Empty() {
-					retV, err := frame.Stack.Pop()
-					if err != nil {
-						return err
-					}
+					//has return value
+					retV, _ := frame.Stack.Pop()
+					//TODO check frame.FunctionSig with retV
 					vm.CurrentFrame -= 1
+					//empty frame stack
 					if vm.CurrentFrame == -1 {
 						vm.ReturnValue = retV
 						return nil
-					}else{
+					} else {
 						frame = vm.GetCurrentFrame()
 					}
 				}
 			}
+			//TODO :end for 'if','loop','block'
 		case IR.OPCtry_:
 		case IR.OPCcatch_:
 		case IR.OPCcatch_all:

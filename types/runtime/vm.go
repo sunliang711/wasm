@@ -10,8 +10,6 @@ const (
 	MAXFRAME = 128
 )
 
-
-
 type Value struct {
 	Typ IR.ValueType
 	Val interface{}
@@ -24,56 +22,13 @@ func (v *Value) Value() interface{} {
 	return v.Val
 }
 
-type FunctionCode struct {
-	NumParams      int              // to init frame.Locals
-	NonParamLocals []IR.InterfaceValue //locals only,not including parameters,to init frame.Locals
-	Codes          []IR.Instruction
-	Result         IR.InterfaceValue
-}
-
-type FunctionSig struct {
-	Parameters []IR.ValueType
-	Results    []IR.ValueType
-}
-type Frame struct {
-	*IR.FunctionDef
-	*FunctionSig
-	FuncitonID int
-	//*FunctionCode
-	PC int
-	*IR.Stack
-	Locals []IR.InterfaceValue //parameters、locals :used by get_local set_local ...
-	//TODO:don't forget to init locals(not including parameters) to zero-value when execute
-}
-
-func (f *Frame) Init(fID int, vm *VM, params []IR.InterfaceValue) error {
-	f.FuncitonID = fID
-	f.FunctionDef = vm.FunctionCodes[fID]
-
-	fType := vm.Module.Types[int(f.FunctionDef.Type.Index)]
-	//check parameters count
-	if int(fType.Params.NumElems) != len(params) {
-		return fmt.Errorf("parameter counter not match")
-	}
-	//check parameters type
-	for index := range fType.Params.Elems {
-		if fType.Params.Elems[index] != params[index].Type() {
-			return fmt.Errorf("parameter type not match")
-		}
-	}
-
-	f.FunctionSig = &FunctionSig{
-		Parameters: fType.Params.Elems,
-		Results:    fType.Results.Elems}
-
-	localLen := int(fType.Params.NumElems) + len(f.FunctionDef.NonParameterLocalTypes)
-	f.Locals = make([]IR.InterfaceValue, localLen)
-	for i := range params {
-		f.Locals[i] = params[i]
-	}
-
-	return nil
-}
+//
+//type FunctionCode struct {
+//	NumParams      int              // to init frame.Locals
+//	NonParamLocals []IR.InterfaceValue //locals only,not including parameters,to init frame.Locals
+//	Codes          []IR.Instruction
+//	Result         IR.InterfaceValue
+//}
 
 var (
 	//TODO: for resolving import
@@ -97,7 +52,7 @@ func NewVM(module *IR.Module) (*VM, error) {
 	//TODO resolve import
 
 	//1. init functionCodes
-	vm.FunctionCodes = make([]*IR.FunctionDef, len(module.Functions.Defs))
+	vm.FunctionCodes = make([]*IR.FunctionDef, len(module.Functions.Defs)+len(module.Functions.Imports))
 	for i := range module.Functions.Defs {
 		vm.FunctionCodes[i] = &module.Functions.Defs[i]
 	}
@@ -163,14 +118,20 @@ func (vm *VM) GetCurrentFrame() *Frame {
 	if vm.CurrentFrame >= MAXFRAME {
 		return nil
 	}
-	return vm.Frames[vm.CurrentFrame];
+	return vm.Frames[vm.CurrentFrame]
 }
 
 func (vm *VM) Traceback() {
-	//TODO
-	//for i := vm.CurrentFrame; i >= 0; i-- {
-		//for _, p := range vm.Frames[i].FunctionSig.Parameters {
-			//p.String()
-		//}
-	//}
+	ret := ""
+	for i := vm.CurrentFrame; i >= 0; i-- {
+		ret += "func " + vm.Frames[i].Name + " "
+		ret += vm.Frames[i].FunctionType.String() + "\n"
+	}
+	fmt.Println("Traceback:")
+	fmt.Printf(ret)
+}
+
+func (vm *VM) panic(v interface{}) {
+	vm.Traceback()
+	panic(v)
 }

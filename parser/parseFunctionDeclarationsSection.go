@@ -33,7 +33,10 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 		if int(funcTypeIndex) > len(p.Module.Types) {
 			return fmt.Errorf(types.ErrFunctionTypeIndexOutOfRange)
 		}
-		funcDef := IR.FunctionDef{Type: IR.IndexedFunctionType{uint64(funcTypeIndex)}}
+		funcDef := IR.FunctionDef{
+			Type:         IR.IndexedFunctionType{uint64(funcTypeIndex)},
+			FunctionType: p.Module.Types[funcTypeIndex],
+		}
 		p.Module.Functions.Defs = append(p.Module.Functions.Defs, funcDef)
 		logrus.Infof("<function Declaration section> function def: %v", funcDef)
 	}

@@ -33,3 +33,10 @@ func (s *Stack) Pop() (InterfaceValue, error) {
 	s.data = s.data[:len(s.data)-1]
 	return ret, nil
 }
+
+func (s *Stack) Top() (InterfaceValue, error) {
+	if s.Empty() {
+		return nil, fmt.Errorf("Empty Stack")
+	}
+	return s.data[len(s.data)-1], nil
+}

@@ -21,19 +21,18 @@ const (
 	ErrInvalidValueType = "Invalid value type"
 )
 
-
 func (vt ValueType) String() string {
 	switch vt {
 	case TypeAny:
 		return "type:any"
 	case TypeI32:
-		return "type:i32"
+		return "i32"
 	case TypeI64:
-		return "type:i64"
+		return "i64"
 	case TypeF32:
-		return "type:f32"
+		return "f32"
 	case TypeF64:
-		return "type:f64"
+		return "f64"
 	case TypeV128:
 		return "type:v128"
 	case TypeAnyRef:

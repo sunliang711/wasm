@@ -1,5 +1,10 @@
 package IR
 
+import (
+	"fmt"
+	"wasm/types"
+)
+
 type Module struct {
 	FeatureSpec *FeatureSpec
 
@@ -11,10 +16,11 @@ type Module struct {
 	Globals        IndexSpaceGlobal
 	ExceptionTypes IndexSpaceExceptionType
 
-	Exports      []Export
-	DataSegments []DataSegment
-	ElemSegments []ElemSegment
-	UserSections []UserSection
+	Exports         []*Export
+	ExportFunctions []*Export
+	DataSegments    []DataSegment
+	ElemSegments    []ElemSegment
+	UserSections    []UserSection
 
 	StartFunctionIndex int
 
@@ -30,4 +36,13 @@ func NewModule() *Module {
 	return &Module{
 		FeatureSpec: NewFeatureSepc(),
 	}
+}
+
+func (m *Module) GetFuncIndexWithName(name string) (int, error) {
+	for _, f := range m.ExportFunctions {
+		if f.Name == name {
+			return int(f.Index), nil
+		}
+	}
+	return -1, fmt.Errorf(types.ErrFuncNotFound)
 }

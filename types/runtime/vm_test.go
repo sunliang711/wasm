@@ -7,8 +7,8 @@ import (
 )
 
 func TestVM(t *testing.T) {
-
 	inputfile := "/Users/eagle/Downloads/add.wasm"
+	inputfile = "/home/eagle/Downloads/test.wasm"
 	parser, err := parser.NewParser(inputfile)
 	if err != nil {
 		t.Fatal(err)
@@ -23,11 +23,18 @@ func TestVM(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := []IR.InterfaceValue{
-		&Value{Typ: IR.TypeI32, Val: int32(1)},
-		&Value{Typ: IR.TypeI32, Val: int32(2)}}
+		&Value{Typ: IR.TypeI32, Val: uint32(20)},
+		&Value{Typ: IR.TypeI32, Val: uint32(3)},
+	}
 
-	err = vm.Run(0, params)
+	err = vm.Run("_Z6dividejj", -1, params)
 	if err != nil {
 		t.Fatal(err)
+	} else {
+		t.Log(vm.ReturnValue.Value())
 	}
+}
+
+func TestA(t *testing.T) {
+
 }

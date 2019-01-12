@@ -41,7 +41,8 @@ type FunctionType struct {
 }
 
 func (ft FunctionType) String() string {
-	return fmt.Sprintf("{Params: %v , Results: %v}", ft.Params, ft.Results)
+	//return fmt.Sprintf("{Params: %v , Results: %v}", ft.Params, ft.Results)
+	return fmt.Sprintf("(%v)->(%v) ", ft.Params, ft.Results)
 }
 
 //basicType: IndexedFunctionType,TableType,MemoryType,GlobalType,ExceptionType
@@ -155,17 +156,19 @@ func (i ImportExceptionType) String() string {
 
 //{{basicDef BEGIN
 type FunctionDef struct {
+	Name                   string
 	Type                   IndexedFunctionType
 	NonParameterLocalTypes []ValueType
 	Code                   []byte
 	BranchTables           [][]uint64
 	Instruction            []Instruction
 	EndIndice              []int
+	FunctionType
 }
 
 func (f FunctionDef) String() string {
-	return fmt.Sprintf("{Type: %v, NonParameterLocalTypes: %v,Code: %v,BranchTable: %v}",
-		f.Type, f.NonParameterLocalTypes, f.Code, f.BranchTables)
+	return fmt.Sprintf("{Type: %v, NonParameterLocalTypes: %v,Code: %v,BranchTable: %v,FunctionType: %v}",
+		f.Type, f.NonParameterLocalTypes, f.Code, f.BranchTables, f.FunctionType)
 }
 
 type TableDef struct {
