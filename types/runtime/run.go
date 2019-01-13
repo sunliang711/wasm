@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"fmt"
+	"reflect"
 	"wasm/types"
 	"wasm/types/IR"
 	"wasm/utils"
@@ -22,21 +23,63 @@ func IsZero(v IR.InterfaceValue) bool {
 	}
 }
 
-func (vm *VM) Run(funcName string, funcIndex int, params []IR.InterfaceValue) (err error) {
+func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err error) {
 	//TODO check all type assertion
 	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()
 	if frame == nil {
 		vm.panic("Frame stack overflow.")
 	}
-	// enable funcName,if funcIndex < 0
-	if funcIndex < 0 {
-		funcIndex, err = vm.Module.GetFuncIndexWithName(funcName)
+	funcIndex := 0
+	switch functionNameOrID.(type) {
+	case string:
+		funcIndex, err = vm.Module.GetFuncIndexWithName(functionNameOrID.(string))
 		if err != nil {
 			vm.panic(err)
 		}
+	case int:
+		funcIndex = functionNameOrID.(int)
 	}
-	err = frame.Init(funcIndex, vm, params)
+
+	Params := make([]IR.InterfaceValue, 0)
+	//int8,int16,int32 --> int32;  uint8,uint16,uint32 --> uint32
+	//int,int64 --> int64; uint,uint64 --> uint64
+	for _, p := range params {
+		kind := reflect.TypeOf(p).Kind()
+		switch kind {
+		case reflect.Int8:
+			Params = append(Params, &Value{IR.TypeI32, int32(p.(int8))})
+		case reflect.Uint8:
+			Params = append(Params, &Value{IR.TypeI32, uint32(p.(uint8))})
+		case reflect.Int16:
+			Params = append(Params, &Value{IR.TypeI32, int32(p.(int16))})
+		case reflect.Uint16:
+			Params = append(Params, &Value{IR.TypeI32, uint32(p.(uint16))})
+		case reflect.Int32:
+			Params = append(Params, &Value{IR.TypeI32, p.(int32)})
+		case reflect.Uint32:
+			Params = append(Params, &Value{IR.TypeI32, p.(uint32)})
+
+		case reflect.Int:
+			Params = append(Params, &Value{IR.TypeI64, int64(p.(int))})
+		case reflect.Uint:
+			Params = append(Params, &Value{IR.TypeI64, uint64(p.(uint))})
+		case reflect.Int64:
+			Params = append(Params, &Value{IR.TypeI64, p.(int64)})
+		case reflect.Uint64:
+			Params = append(Params, &Value{IR.TypeI64, p.(uint64)})
+
+		case reflect.Float32:
+			Params = append(Params, &Value{IR.TypeF32, p.(float32)})
+		case reflect.Float64:
+			Params = append(Params, &Value{IR.TypeF64, p.(float64)})
+
+		default:
+			panic("Parameter type not valid,only support (u)int8,u(int16),u(int32),u(int),u(int64),float32,float64")
+		}
+	}
+
+	err = frame.Init(funcIndex, vm, Params)
 	if err != nil {
 		vm.panic(err)
 	}

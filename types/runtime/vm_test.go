@@ -3,7 +3,6 @@ package runtime
 import (
 	"testing"
 	"wasm/parser"
-	"wasm/types/IR"
 )
 
 func TestVM(t *testing.T) {
@@ -22,12 +21,12 @@ func TestVM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	params := []IR.InterfaceValue{
-		&Value{Typ: IR.TypeI32, Val: uint32(20)},
-		&Value{Typ: IR.TypeI32, Val: uint32(3)},
-	}
+	//params := []IR.InterfaceValue{
+	//	&Value{Typ: IR.TypeI32, Val: uint32(20)},
+	//	&Value{Typ: IR.TypeI32, Val: uint32(3)},
+	//}
 
-	err = vm.Run("_Z6dividejj", -1, params)
+	err = vm.Run("_Z6dividejj", uint32(2), uint16(3))
 	if err != nil {
 		t.Fatal(err)
 	} else {
