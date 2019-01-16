@@ -64,6 +64,82 @@ func NewParser(filename string) (*Parser, error) {
 	}, nil
 }
 
+func (p *Parser) Parse2() (err error) {
+
+	var (
+		bufType = make([]byte, 1)
+		bufData []byte
+	)
+	// check magic number
+	err = checkConstant(p.Stream, MagicNumber, types.ErrMagicNumber)
+	if err != nil {
+		return err
+	}
+	// check version
+	err = checkConstant(p.Stream, CurrentVersion, types.ErrVersion)
+	if err != nil {
+		return err
+	}
+
+	lastSectionType := IR.OrderUnknown
+
+	// read loop
+	// get section bytes,then send to loop()
+	for {
+		// get section type,if read 0 byte, more => false
+		_, err := p.Stream.Read(bufType)
+		if err == io.EOF {
+			logrus.Info("End of file")
+			break
+		} else if err != nil {
+			return err
+		}
+		rawSectionType := IR.RawSecType(bufType[0])
+		orderSection, err := IR.SectionType2Order(rawSectionType)
+		if err != nil {
+			return nil
+		}
+
+		//check section order
+		if orderSection != IR.OrderUser {
+			if orderSection > lastSectionType {
+				lastSectionType = orderSection
+			} else {
+				return fmt.Errorf(types.ErrIncorrectOrder)
+			}
+		}
+		// get section num bytes
+		var sectionNumBytes uint32
+		_, err = utils.DecodeVarInt(p.Stream, 32, &sectionNumBytes)
+		if err != nil {
+			return err
+		}
+
+		// get section data
+		bufData = make([]byte, sectionNumBytes)
+		n, err := p.Stream.Read(bufData)
+		if err != nil {
+			return err
+		}
+		if uint32(n) != sectionNumBytes {
+			return fmt.Errorf(types.ErrInsufficientBytes)
+		}
+
+		//make Section
+		section := &Section{
+			Type:            orderSection,
+			NumSectionBytes: sectionNumBytes,
+			Data:            bufData,
+		}
+		err = p.parseSection2(section)
+		if err != nil {
+			return err
+		}
+	}
+	p.Post()
+	return nil
+}
+
 func (p *Parser) Parse() error {
 	go p.fileLoop()
 	return p.eventLoop()
@@ -176,6 +252,38 @@ func (p *Parser) eventLoop() error {
 			return nil
 		}
 	}
+}
+
+func (p *Parser) parseSection2(sec *Section) (err error) {
+	switch sec.Type {
+	case IR.OrderType:
+		err = p.typeSection(sec)
+	case IR.OrderImport:
+		err = p.importSection(sec)
+	case IR.OrderFunctionDeclarations:
+		err = p.functionDeclarationsSection(sec)
+	case IR.OrderTable:
+		err = p.tableSection(sec)
+	case IR.OrderMemory:
+		err = p.memorySection(sec)
+	case IR.OrderGlobal:
+		err = p.globalSection(sec)
+	case IR.OrderExceptionTypes:
+		err = p.exceptionTypesSection(sec)
+	case IR.OrderExport:
+		err = p.exportSection(sec)
+	case IR.OrderStart:
+		err = p.startSection(sec)
+	case IR.OrderElem:
+		err = p.elemSection(sec)
+	case IR.OrderFunctionDefinitions:
+		err = p.functionDefinitionsSection(sec)
+	case IR.OrderData:
+		err = p.dataSection(sec)
+	case IR.OrderUser:
+		err = p.userSection(sec)
+	}
+	return
 }
 
 func (p *Parser) parseSection(sec *Section) {

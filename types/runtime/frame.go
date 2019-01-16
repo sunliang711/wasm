@@ -17,6 +17,10 @@ func (f *Frame) advance(step int) {
 	f.PC += step
 }
 
+func (f *Frame) advanceTo(dest int) {
+	f.PC = dest
+}
+
 func (f *Frame) Init(fID int, vm *VM, params []IR.InterfaceValue) error {
 	f.FuncitonID = fID
 	f.FunctionDef = vm.FunctionCodes[fID]

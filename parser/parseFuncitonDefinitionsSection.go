@@ -72,11 +72,12 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 		//}
 		//funcDef.Code = extendedCodes
 		funcDef.Code = opcodeBytes
-		ins, endIndice, err := DecodeOpcodeAndImm(opcodeBytes, &funcDef)
+		ins, err := DecodeOpcodeAndImm(opcodeBytes, &funcDef)
 		if err != nil {
-			return nil
+			return err
 		}
 		funcDef.Instruction = ins
+		endIndice, err := buildInsRelationship(ins)
 		funcDef.EndIndice = endIndice
 
 		p.Module.Functions.Defs[i] = funcDef
@@ -84,4 +85,48 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 	}
 
 	return nil
+}
+
+func buildInsRelationship(ins []IR.Instruction) ([]int, error) {
+	if len(ins) == 0 {
+		return nil, fmt.Errorf("Empty instruction")
+	}
+	if ins[len(ins)-1].Op.Code != IR.OPCend {
+		return nil, fmt.Errorf("instruction not end with 'end'")
+	}
+	ins[len(ins)-1].MatchedIndex = -2
+	var endIndice []int
+	fullStack := utils.Stack{}
+	ifStack := utils.Stack{}
+	for index := range ins[:len(ins)-1] {
+		fullStack.Push(&ins[index])
+		switch ins[index].Op.Code {
+		case IR.OPCblock, IR.OPCloop:
+		case IR.OPCif_:
+			ifStack.Push(&ins[index])
+		case IR.OPCelse_:
+			t, err := ifStack.Pop()
+			if err != nil {
+				return nil, fmt.Errorf("buildInsRelationship(): ifStack empty")
+			}
+			t.(*IR.Instruction).MatchedIndex = ins[index].Index
+		case IR.OPCend:
+			endIndice = append(endIndice, ins[index].Index)
+		INNER_LOOP:
+			for {
+				popedIns, err := fullStack.Pop()
+				if err != nil {
+					return nil, fmt.Errorf("buildInsRelationship(): fullStack empty")
+				}
+				switch popedIns.(*IR.Instruction).Op.Code {
+				case IR.OPCif_, IR.OPCloop, IR.OPCblock:
+					ins[index].MatchedIndex = popedIns.(*IR.Instruction).Index
+					break INNER_LOOP
+				}
+			}
+		}
+	}
+	endIndice = append(endIndice, len(ins)-1)
+
+	return endIndice, nil
 }

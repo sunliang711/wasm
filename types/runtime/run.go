@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"encoding/binary"
 	"fmt"
 	"reflect"
 	"wasm/types"
@@ -28,7 +29,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()
 	if frame == nil {
-		vm.panic("Frame stack overflow.")
+		panic("Frame stack overflow.")
 	}
 	funcIndex := 0
 	switch functionNameOrID.(type) {
@@ -39,6 +40,8 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		}
 	case int:
 		funcIndex = functionNameOrID.(int)
+	default:
+		panic("functionNameOrID must be a string or an int")
 	}
 
 	Params := make([]IR.InterfaceValue, 0)
@@ -80,20 +83,57 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 	}
 
 	err = frame.Init(funcIndex, vm, Params)
+	endIndice := vm.FunctionCodes[funcIndex].EndIndice
 	if err != nil {
 		vm.panic(err)
 	}
 	//Execute
 	for {
+		lastPC := frame.PC
 		ins := frame.Instruction[frame.PC]
 
 		switch ins.Op.Code {
 		case IR.OPCunreachable:
 			vm.panic("unreachable executed")
 		case IR.OPCbr:
+			td := ins.Imm.(*IR.BranchImm).TargetDepth
+			tarInsIndex := endIndice[int(td)]
+			frame.advanceTo(tarInsIndex)
 		case IR.OPCbr_if:
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			con, _ := frame.Stack.Pop()
+			v := con.Value().(int32)
+			if v == 1 {
+				td := ins.Imm.(*IR.BranchImm).TargetDepth
+				tarInsIndex := endIndice[int(td)]
+				frame.advanceTo(tarInsIndex)
+			} else {
+				frame.advance(1)
+			}
+
 		case IR.OPCbr_table:
 		case IR.OPCreturn_:
+			var retV IR.InterfaceValue
+			vm.CurrentFrame -= 1
+			hasResult := !frame.Stack.Empty()
+			if hasResult {
+				//has return value
+				retV, _ = frame.Stack.Pop()
+				//TODO check frame.FunctionSig with retV
+			}
+			if vm.CurrentFrame == -1 {
+				if hasResult {
+					vm.ReturnValue = retV
+				}
+				return nil
+			} else {
+				if hasResult {
+					frame.Stack.Push(retV)
+				}
+				frame = vm.GetCurrentFrame()
+			}
 		case IR.OPCcall:
 		case IR.OPCcall_indirect:
 		case IR.OPCdrop:
@@ -154,6 +194,19 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCnop:
 			frame.advance(1)
 		case IR.OPCi32_load:
+			if frame.Stack.Empty() {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			baseVal, _ := frame.Stack.Pop()
+			base := baseVal.Value().(int32)
+			offset := ins.Imm.(*IR.LoadOrStoreImm).Offset
+			addr := base + int32(offset)
+			if addr < 0 {
+				addr += int32(len(vm.Memory))
+			}
+			val := binary.LittleEndian.Uint32(vm.Memory[addr : addr+4])
+			frame.Stack.Push(&Value{IR.TypeI32, int32(val)})
+			frame.advance(1)
 		case IR.OPCi64_load:
 		case IR.OPCf32_load:
 		case IR.OPCf64_load:
@@ -168,6 +221,20 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCi64_load32_s:
 		case IR.OPCi64_load32_u:
 		case IR.OPCi32_store:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			valVal, _ := frame.Stack.Pop()
+			baseVal, _ := frame.Stack.Pop()
+			base := baseVal.Value().(int32)
+			val := valVal.Value().(int32)
+			offset := ins.Imm.(*IR.LoadOrStoreImm).Offset
+			addr := base + int32(offset)
+			if addr < 0 {
+				addr += int32(len(vm.Memory))
+			}
+			binary.LittleEndian.PutUint32(vm.Memory[addr:addr+4], uint32(val))
+			frame.advance(1)
 		case IR.OPCi64_store:
 		case IR.OPCf32_store:
 		case IR.OPCf64_store:
@@ -529,252 +596,72 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCref_null:
 		case IR.OPCref_isnull:
 		case IR.OPCref_func:
-		case IR.OPCi32_trunc_s_sat_f32:
-		case IR.OPCi32_trunc_u_sat_f32:
-		case IR.OPCi32_trunc_s_sat_f64:
-		case IR.OPCi32_trunc_u_sat_f64:
-		case IR.OPCi64_trunc_s_sat_f32:
-		case IR.OPCi64_trunc_u_sat_f32:
-		case IR.OPCi64_trunc_s_sat_f64:
-		case IR.OPCi64_trunc_u_sat_f64:
-		case IR.OPCmemory_init:
-		case IR.OPCmemory_drop:
-		case IR.OPCmemory_copy:
-		case IR.OPCmemory_fill:
-		case IR.OPCtable_init:
-		case IR.OPCtable_drop:
-		case IR.OPCtable_copy:
-		case IR.OPCv128_const:
-		case IR.OPCv128_load:
-		case IR.OPCv128_store:
-		case IR.OPCi8x16_splat:
-		case IR.OPCi16x8_splat:
-		case IR.OPCi32x4_splat:
-		case IR.OPCi64x2_splat:
-		case IR.OPCf32x4_splat:
-		case IR.OPCf64x2_splat:
-		case IR.OPCi8x16_extract_lane_s:
-		case IR.OPCi8x16_extract_lane_u:
-		case IR.OPCi16x8_extract_lane_s:
-		case IR.OPCi16x8_extract_lane_u:
-		case IR.OPCi32x4_extract_lane:
-		case IR.OPCi64x2_extract_lane:
-		case IR.OPCf32x4_extract_lane:
-		case IR.OPCf64x2_extract_lane:
-		case IR.OPCi8x16_replace_lane:
-		case IR.OPCi16x8_replace_lane:
-		case IR.OPCi32x4_replace_lane:
-		case IR.OPCi64x2_replace_lane:
-		case IR.OPCf32x4_replace_lane:
-		case IR.OPCf64x2_replace_lane:
-		case IR.OPCv8x16_shuffle:
-		case IR.OPCi8x16_add:
-		case IR.OPCi16x8_add:
-		case IR.OPCi32x4_add:
-		case IR.OPCi64x2_add:
-		case IR.OPCi8x16_sub:
-		case IR.OPCi16x8_sub:
-		case IR.OPCi32x4_sub:
-		case IR.OPCi64x2_sub:
-		case IR.OPCi8x16_mul:
-		case IR.OPCi16x8_mul:
-		case IR.OPCi32x4_mul:
-		case IR.OPCi8x16_neg:
-		case IR.OPCi16x8_neg:
-		case IR.OPCi32x4_neg:
-		case IR.OPCi64x2_neg:
-		case IR.OPCi8x16_add_saturate_s:
-		case IR.OPCi8x16_add_saturate_u:
-		case IR.OPCi16x8_add_saturate_s:
-		case IR.OPCi16x8_add_saturate_u:
-		case IR.OPCi8x16_sub_saturate_s:
-		case IR.OPCi8x16_sub_saturate_u:
-		case IR.OPCi16x8_sub_saturate_s:
-		case IR.OPCi16x8_sub_saturate_u:
-		case IR.OPCi8x16_shl:
-		case IR.OPCi16x8_shl:
-		case IR.OPCi32x4_shl:
-		case IR.OPCi64x2_shl:
-		case IR.OPCi8x16_shr_s:
-		case IR.OPCi8x16_shr_u:
-		case IR.OPCi16x8_shr_s:
-		case IR.OPCi16x8_shr_u:
-		case IR.OPCi32x4_shr_s:
-		case IR.OPCi32x4_shr_u:
-		case IR.OPCi64x2_shr_s:
-		case IR.OPCi64x2_shr_u:
-		case IR.OPCv128_and:
-		case IR.OPCv128_or:
-		case IR.OPCv128_xor:
-		case IR.OPCv128_not:
-		case IR.OPCv128_bitselect:
-		case IR.OPCi8x16_any_true:
-		case IR.OPCi16x8_any_true:
-		case IR.OPCi32x4_any_true:
-		case IR.OPCi64x2_any_true:
-		case IR.OPCi8x16_all_true:
-		case IR.OPCi16x8_all_true:
-		case IR.OPCi32x4_all_true:
-		case IR.OPCi64x2_all_true:
-		case IR.OPCi8x16_eq:
-		case IR.OPCi16x8_eq:
-		case IR.OPCi32x4_eq:
-		case IR.OPCf32x4_eq:
-		case IR.OPCf64x2_eq:
-		case IR.OPCi8x16_ne:
-		case IR.OPCi16x8_ne:
-		case IR.OPCi32x4_ne:
-		case IR.OPCf32x4_ne:
-		case IR.OPCf64x2_ne:
-		case IR.OPCi8x16_lt_s:
-		case IR.OPCi8x16_lt_u:
-		case IR.OPCi16x8_lt_s:
-		case IR.OPCi16x8_lt_u:
-		case IR.OPCi32x4_lt_s:
-		case IR.OPCi32x4_lt_u:
-		case IR.OPCf32x4_lt:
-		case IR.OPCf64x2_lt:
-		case IR.OPCi8x16_le_s:
-		case IR.OPCi8x16_le_u:
-		case IR.OPCi16x8_le_s:
-		case IR.OPCi16x8_le_u:
-		case IR.OPCi32x4_le_s:
-		case IR.OPCi32x4_le_u:
-		case IR.OPCf32x4_le:
-		case IR.OPCf64x2_le:
-		case IR.OPCi8x16_gt_s:
-		case IR.OPCi8x16_gt_u:
-		case IR.OPCi16x8_gt_s:
-		case IR.OPCi16x8_gt_u:
-		case IR.OPCi32x4_gt_s:
-		case IR.OPCi32x4_gt_u:
-		case IR.OPCf32x4_gt:
-		case IR.OPCf64x2_gt:
-		case IR.OPCi8x16_ge_s:
-		case IR.OPCi8x16_ge_u:
-		case IR.OPCi16x8_ge_s:
-		case IR.OPCi16x8_ge_u:
-		case IR.OPCi32x4_ge_s:
-		case IR.OPCi32x4_ge_u:
-		case IR.OPCf32x4_ge:
-		case IR.OPCf64x2_ge:
-		case IR.OPCf32x4_neg:
-		case IR.OPCf64x2_neg:
-		case IR.OPCf32x4_abs:
-		case IR.OPCf64x2_abs:
-		case IR.OPCf32x4_min:
-		case IR.OPCf64x2_min:
-		case IR.OPCf32x4_max:
-		case IR.OPCf64x2_max:
-		case IR.OPCf32x4_add:
-		case IR.OPCf64x2_add:
-		case IR.OPCf32x4_sub:
-		case IR.OPCf64x2_sub:
-		case IR.OPCf32x4_div:
-		case IR.OPCf64x2_div:
-		case IR.OPCf32x4_mul:
-		case IR.OPCf64x2_mul:
-		case IR.OPCf32x4_sqrt:
-		case IR.OPCf64x2_sqrt:
-		case IR.OPCf32x4_convert_s_i32x4:
-		case IR.OPCf32x4_convert_u_i32x4:
-		case IR.OPCf64x2_convert_s_i64x2:
-		case IR.OPCf64x2_convert_u_i64x2:
-		case IR.OPCi32x4_trunc_s_sat_f32x4:
-		case IR.OPCi32x4_trunc_u_sat_f32x4:
-		case IR.OPCi64x2_trunc_s_sat_f64x2:
-		case IR.OPCi64x2_trunc_u_sat_f64x2:
-		case IR.OPCatomic_wake:
-		case IR.OPCi32_atomic_wait:
-		case IR.OPCi64_atomic_wait:
-		case IR.OPCi32_atomic_load:
-		case IR.OPCi64_atomic_load:
-		case IR.OPCi32_atomic_load8_u:
-		case IR.OPCi32_atomic_load16_u:
-		case IR.OPCi64_atomic_load8_u:
-		case IR.OPCi64_atomic_load16_u:
-		case IR.OPCi64_atomic_load32_u:
-		case IR.OPCi32_atomic_store:
-		case IR.OPCi64_atomic_store:
-		case IR.OPCi32_atomic_store8:
-		case IR.OPCi32_atomic_store16:
-		case IR.OPCi64_atomic_store8:
-		case IR.OPCi64_atomic_store16:
-		case IR.OPCi64_atomic_store32:
-		case IR.OPCi32_atomic_rmw_add:
-		case IR.OPCi64_atomic_rmw_add:
-		case IR.OPCi32_atomic_rmw8_u_add:
-		case IR.OPCi32_atomic_rmw16_u_add:
-		case IR.OPCi64_atomic_rmw8_u_add:
-		case IR.OPCi64_atomic_rmw16_u_add:
-		case IR.OPCi64_atomic_rmw32_u_add:
-		case IR.OPCi32_atomic_rmw_sub:
-		case IR.OPCi64_atomic_rmw_sub:
-		case IR.OPCi32_atomic_rmw8_u_sub:
-		case IR.OPCi32_atomic_rmw16_u_sub:
-		case IR.OPCi64_atomic_rmw8_u_sub:
-		case IR.OPCi64_atomic_rmw16_u_sub:
-		case IR.OPCi64_atomic_rmw32_u_sub:
-		case IR.OPCi32_atomic_rmw_and:
-		case IR.OPCi64_atomic_rmw_and:
-		case IR.OPCi32_atomic_rmw8_u_and:
-		case IR.OPCi32_atomic_rmw16_u_and:
-		case IR.OPCi64_atomic_rmw8_u_and:
-		case IR.OPCi64_atomic_rmw16_u_and:
-		case IR.OPCi64_atomic_rmw32_u_and:
-		case IR.OPCi32_atomic_rmw_or:
-		case IR.OPCi64_atomic_rmw_or:
-		case IR.OPCi32_atomic_rmw8_u_or:
-		case IR.OPCi32_atomic_rmw16_u_or:
-		case IR.OPCi64_atomic_rmw8_u_or:
-		case IR.OPCi64_atomic_rmw16_u_or:
-		case IR.OPCi64_atomic_rmw32_u_or:
-		case IR.OPCi32_atomic_rmw_xor:
-		case IR.OPCi64_atomic_rmw_xor:
-		case IR.OPCi32_atomic_rmw8_u_xor:
-		case IR.OPCi32_atomic_rmw16_u_xor:
-		case IR.OPCi64_atomic_rmw8_u_xor:
-		case IR.OPCi64_atomic_rmw16_u_xor:
-		case IR.OPCi64_atomic_rmw32_u_xor:
-		case IR.OPCi32_atomic_rmw_xchg:
-		case IR.OPCi64_atomic_rmw_xchg:
-		case IR.OPCi32_atomic_rmw8_u_xchg:
-		case IR.OPCi32_atomic_rmw16_u_xchg:
-		case IR.OPCi64_atomic_rmw8_u_xchg:
-		case IR.OPCi64_atomic_rmw16_u_xchg:
-		case IR.OPCi64_atomic_rmw32_u_xchg:
-		case IR.OPCi32_atomic_rmw_cmpxchg:
-		case IR.OPCi64_atomic_rmw_cmpxchg:
-		case IR.OPCi32_atomic_rmw8_u_cmpxchg:
-		case IR.OPCi32_atomic_rmw16_u_cmpxchg:
-		case IR.OPCi64_atomic_rmw8_u_cmpxchg:
-		case IR.OPCi64_atomic_rmw16_u_cmpxchg:
-		case IR.OPCi64_atomic_rmw32_u_cmpxchg:
+
 		case IR.OPCblock:
+			frame.advance(1)
 		case IR.OPCloop:
 		case IR.OPCif_:
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			con, _ := frame.Stack.Pop()
+			v := con.Value().(int32)
+			if v == 1 {
+				frame.advanceTo(1)
+			} else {
+				//TODO advanctTo else or end
+			}
 		case IR.OPCelse_:
 		case IR.OPCend:
-			//the last opcode
-			if ins.Index == len(frame.Instruction)-1 {
-				if !frame.Stack.Empty() {
+			switch ins.MatchedIndex {
+			case -2:
+				//if ins.Index == len(frame.Instruction)-1 {
+				var retV IR.InterfaceValue
+				vm.CurrentFrame -= 1
+				hasResult := !frame.Stack.Empty()
+				if hasResult {
 					//has return value
-					retV, _ := frame.Stack.Pop()
+					retV, _ = frame.Stack.Pop()
 					//TODO check frame.FunctionSig with retV
-					vm.CurrentFrame -= 1
-					//empty frame stack
-					if vm.CurrentFrame == -1 {
+				}
+				if vm.CurrentFrame == -1 {
+					if hasResult {
 						vm.ReturnValue = retV
-						return nil
-					} else {
-						frame = vm.GetCurrentFrame()
 					}
+					return nil
+				} else {
+					if hasResult {
+						//TODO assert frame.Stack is empty
+						frame.Stack.Push(retV)
+					}
+					frame = vm.GetCurrentFrame()
+				}
+			case -1:
+				vm.panic("end ins matched index illegal")
+			default:
+				//TODO pop value stack since block or if
+				mindex := ins.MatchedIndex
+				switch frame.Instruction[mindex].Op.Code {
+				case IR.OPCblock:
+					frame.advance(1)
+				case IR.OPCif_:
+					frame.advance(1)
+				case IR.OPCloop:
+					frame.advanceTo(mindex + 1)
+				default:
+					vm.panic("end ins not point to block/if/loop")
 				}
 			}
+
 			//TODO :end for 'if','loop','block'
 		case IR.OPCtry_:
 		case IR.OPCcatch_:
 		case IR.OPCcatch_all:
+		default:
+			frame.runBinaryOp(vm, &ins)
+		}
+		if lastPC == frame.PC {
+			vm.panic("PC not changed.")
 		}
 	}
 }

@@ -5,6 +5,8 @@ type Instruction struct {
 	Imm Imm
 	//TODO:need Index?
 	Index int
+	//for opcode 'end'
+	MatchedIndex int
 }
 
 func (i *Instruction) Type() ValueType {

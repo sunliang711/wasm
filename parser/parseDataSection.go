@@ -58,12 +58,12 @@ func (p *Parser) dataSection(sec *Section) error {
 			return fmt.Errorf(types.ErrInvalidDataSegFlags)
 		}
 		// init data size
-		var numInit int
+		var numInit uint32
 		_, err = utils.DecodeVarInt(rd, 32, &numInit)
 		if err != nil {
 			return err
 		}
-		initData,err := utils.ReadNByte(rd,numInit)
+		initData, err := utils.ReadNByte(rd, int(numInit))
 		if err != nil {
 			return err
 		}

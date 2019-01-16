@@ -53,8 +53,11 @@ func NewVM(module *IR.Module) (*VM, error) {
 
 	//1. init functionCodes
 	vm.FunctionCodes = make([]*IR.FunctionDef, len(module.Functions.Defs)+len(module.Functions.Imports))
+	//TODO add imported functions to vm.FunctionCodes
+
+	importFunLen := len(module.Functions.Imports)
 	for i := range module.Functions.Defs {
-		vm.FunctionCodes[i] = &module.Functions.Defs[i]
+		vm.FunctionCodes[importFunLen+i] = &module.Functions.Defs[i]
 	}
 
 	//2. init global
