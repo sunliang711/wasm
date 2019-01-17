@@ -20,8 +20,11 @@ func TestA(t *testing.T) {
 	test(t, "../../example/br_if_memory.wasm", "_Z2ffi", int32(3))
 }
 
-func TestSumMax(t *testing.T) {
+func TestMax(t *testing.T) {
 	test(t, "../../example/sum_max.wasm", "_Z3maxii", int32(30), int32(5))
+}
+func TestSum(t *testing.T) {
+	test(t, "../../example/sum_max.wasm", "_Z3sumi", int32(30))
 }
 func test(t *testing.T, filename string, funcName string, params ...interface{}) {
 	parser, err := parser.NewParser(filename)

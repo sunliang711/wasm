@@ -50,17 +50,17 @@ func (m *Module) GetFuncIndexWithName(name string) (int, error) {
 func (m *Module) GetAllFuncIns() string {
 	ret := ""
 	for _, f := range m.Functions.Defs {
-		ret += "function: " + f.Name + "{"
+		ret += fmt.Sprintf("Function: %s { \n", f.Name)
 		for i, ins := range f.Instruction {
-			ret += fmt.Sprintf("[%d]: %s", i, ins.Op.Name)
+			ret += fmt.Sprintf("[%06d]:%-12s", i, ins.Op.Name)
 			if i != len(f.Instruction)-1 {
-				ret += ","
+				ret += ", "
 			}
-			if (i+1)%8 == 0 {
+			if (i+1)%8 == 0 && i != len(f.Instruction)-1 {
 				ret += "\n"
 			}
 		}
-		ret += "}\n"
+		ret += "\n}\n"
 	}
 	return ret
 }
@@ -68,14 +68,10 @@ func (m *Module) GetAllFuncIns() string {
 func (m *Module) GetAllFunc() string {
 	ret := ""
 	for i, f := range m.Functions.Defs {
-		ret += "function: " + f.Name
+		ret += fmt.Sprintf("function: %s %s", f.Name, f.FunctionType)
 		if i != len(m.Functions.Defs)-1 {
-			ret += ","
-		}
-		if (i+1)%8 == 0 {
 			ret += "\n"
 		}
 	}
-
 	return ret
 }

@@ -3,6 +3,7 @@ package runtime
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"reflect"
 	"wasm/types"
 	"wasm/types/IR"
@@ -600,6 +601,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCblock:
 			frame.advance(1)
 		case IR.OPCloop:
+			frame.advance(1)
 		case IR.OPCif_:
 			if frame.Stack.Len() < 1 {
 				vm.panic(types.ErrStackSizeErr)
@@ -662,6 +664,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		}
 		if lastPC == frame.PC {
 			vm.panic("PC not changed.")
+			logrus.Errorf("PC: %d instruction: %s", frame.PC, frame.Instruction[frame.PC])
 		}
 	}
 }
