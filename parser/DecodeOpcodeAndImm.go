@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"wasm/types/IR"
+	"wasm/core/IR"
 )
 
 func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *IR.FunctionDef) ([]IR.Instruction, error) {

@@ -73,7 +73,7 @@ var (
 		OrderElem:                 "elem section",
 		OrderFunctionDefinitions:  "function definitions section",
 		OrderData:                 "data section",
-		OrderExceptionTypes:       "exception types section",
+		OrderExceptionTypes:       "exception core section",
 	}
 )
 

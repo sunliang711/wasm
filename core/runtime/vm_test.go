@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"github.com/sirupsen/logrus"
 	"testing"
 	"wasm/parser"
 )
@@ -21,9 +22,11 @@ func TestA(t *testing.T) {
 }
 
 func TestMax(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
 	test(t, "../../example/sum_max.wasm", "_Z3maxii", int32(30), int32(5))
 }
 func TestSum(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
 	test(t, "../../example/sum_max.wasm", "_Z3sumi", int32(30))
 }
 func test(t *testing.T, filename string, funcName string, params ...interface{}) {
@@ -45,7 +48,11 @@ func test(t *testing.T, filename string, funcName string, params ...interface{})
 	if err != nil {
 		t.Fatal(err)
 	} else {
-		t.Log(vm.ReturnValue.Value())
+		if vm.ReturnValue != nil {
+			t.Log(vm.ReturnValue.Value())
+		} else {
+			t.Log("No return value.")
+		}
 
 	}
 }

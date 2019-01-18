@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 	"io"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -145,9 +145,9 @@ func DecodeInitializer(rd io.Reader) (IR.InitializerExpression, error) {
 	default:
 		return initExpression, fmt.Errorf(types.ErrInvalidInitializerExpressionOpcode)
 	}
-	endOp,err := utils.ReadByte(rd)
-	if err != nil || IR.Opcode(endOp) != IR.OPCend{
-		return initExpression,fmt.Errorf("initialzer end error")
+	endOp, err := utils.ReadByte(rd)
+	if err != nil || IR.Opcode(endOp) != IR.OPCend {
+		return initExpression, fmt.Errorf("initialzer end error")
 	}
 
 	return initExpression, nil
@@ -195,7 +195,8 @@ func DecodeLocalSet(rd io.Reader, ls *IR.LocalSet) (int, error) {
 	//used n + 1 bytes in total
 	return n + 1, nil
 }
-//func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *types.FunctionDef) ([]byte, error) {
+
+//func DecodeOpcodeAndImm(opcodeBytes []byte, funcDef *core.FunctionDef) ([]byte, error) {
 //	rd := bytes.NewReader(opcodeBytes)
 //	var ret []byte
 //
@@ -208,23 +209,23 @@ func DecodeLocalSet(rd io.Reader, ls *IR.LocalSet) (int, error) {
 //			return nil, err
 //		}
 //		var buf bytes.Buffer
-//		switch types.Opcode(opc) {
-//		case types.OPCbr: //
-//			imm := types.BranchImm{}//
+//		switch core.Opcode(opc) {
+//		case core.OPCbr: //
+//			imm := core.BranchImm{}//
 //			err = DecodeBranchImm(rd, &imm, funcDef)//
 //			if err != nil {
 //				return nil, err
 //			}
-//			opimm := types.OpcodeAndImm_BranchImm{}//
+//			opimm := core.OpcodeAndImm_BranchImm{}//
 //			opimm.Imm = imm
-//			opimm.Opcode = types.OPCbr//
+//			opimm.Opcode = core.OPCbr//
 //			err = binary.Write(&buf, binary.LittleEndian, &opimm)
 //			if err != nil {
 //				return nil, err
 //			}
 //			ret = append(ret, buf.Bytes()...)
 //
-//		case types.OPCbr_if:
+//		case core.OPCbr_if:
 //		}
 //	}
 //	return ret, nil

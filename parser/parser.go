@@ -7,8 +7,8 @@ import (
 	"io"
 	"io/ioutil"
 	"sync"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 

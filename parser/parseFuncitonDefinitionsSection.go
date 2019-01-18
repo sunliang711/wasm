@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -94,7 +94,7 @@ func buildInsRelationship(ins []IR.Instruction) ([]int, error) {
 	if ins[len(ins)-1].Op.Code != IR.OPCend {
 		return nil, fmt.Errorf("instruction not end with 'end'")
 	}
-	ins[len(ins)-1].MatchedIndex = -2
+	ins[len(ins)-1].MatchedIndex = types.LastOpcode
 	var endIndice []int
 	fullStack := utils.Stack{}
 	ifStack := utils.Stack{}

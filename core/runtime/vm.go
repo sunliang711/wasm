@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"wasm/types/IR"
+	"wasm/core/IR"
 )
 
 const (

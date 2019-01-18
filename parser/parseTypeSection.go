@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -101,7 +101,7 @@ func DecodeValueTypeFromReader(rd io.Reader) (IR.ValueType, error) {
 	return DecodeValueType(vType)
 }
 
-func DecodeValueType(vt int8) (IR.ValueType,error)  {
+func DecodeValueType(vt int8) (IR.ValueType, error) {
 	switch vt {
 	case -1:
 		return IR.TypeI32, nil

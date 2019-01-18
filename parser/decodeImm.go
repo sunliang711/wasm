@@ -2,7 +2,7 @@ package parser
 
 import (
 	"io"
-	"wasm/types/IR"
+	"wasm/core/IR"
 	"wasm/utils"
 )
 

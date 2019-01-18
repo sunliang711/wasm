@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 	"io"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 )
 
 func checkConstant(rd io.Reader, constant []byte, errMsg string) error {

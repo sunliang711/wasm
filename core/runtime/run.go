@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"reflect"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 
@@ -616,7 +616,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCelse_:
 		case IR.OPCend:
 			switch ins.MatchedIndex {
-			case -2:
+			case types.LastOpcode:
 				//if ins.Index == len(frame.Instruction)-1 {
 				var retV IR.InterfaceValue
 				vm.CurrentFrame -= 1
@@ -664,7 +664,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		}
 		if lastPC == frame.PC {
 			vm.panic("PC not changed.")
-			logrus.Errorf("PC: %d instruction: %s", frame.PC, frame.Instruction[frame.PC])
+			logrus.Errorf("PC: %d instruction: %v", &frame, frame.Instruction[frame.PC])
 		}
 	}
 }

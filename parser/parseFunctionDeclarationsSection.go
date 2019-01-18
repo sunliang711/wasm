@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"wasm/core/IR"
 	"wasm/types"
-	"wasm/types/IR"
 	"wasm/utils"
 )
 

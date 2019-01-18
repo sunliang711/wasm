@@ -1,6 +1,6 @@
 package runtime
 
-import "wasm/types/IR"
+import "wasm/core/IR"
 
 func (f *Frame) runBinaryOp(vm *VM, ins *IR.Instruction) {
 	switch ins.Op.Code {

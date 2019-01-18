@@ -3,7 +3,7 @@ package parser
 import (
 	"bytes"
 	"github.com/sirupsen/logrus"
-	"wasm/types/IR"
+	"wasm/core/IR"
 	"wasm/utils"
 )
 
