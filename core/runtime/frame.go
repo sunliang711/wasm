@@ -24,6 +24,7 @@ func (f *Frame) advanceTo(dest int) {
 func (f *Frame) Init(fID int, vm *VM, params []IR.InterfaceValue) error {
 	f.FuncitonID = fID
 	f.FunctionDef = vm.FunctionCodes[fID]
+	f.PC = 0
 
 	fType := vm.Module.Types[int(f.FunctionDef.Type.Index)]
 	//check parameters count

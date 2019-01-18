@@ -51,4 +51,6 @@ const (
 
 	ErrFuncNotFound  = "Function not found by exported name"
 	ErrTypeAssertion = "Type assertion error: %v"
+
+	ErrBeyondMaxFrame = "frame beyond the limited count"
 )

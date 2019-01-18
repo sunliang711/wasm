@@ -25,6 +25,11 @@ func TestMax(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
 	test(t, "../../example/sum_max.wasm", "_Z3maxii", int32(30), int32(5))
 }
+
+func TestArea(t *testing.T){
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t,"../../example/area.wasm","_Z4aread",float64(10))
+}
 func TestSum(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
 	test(t, "../../example/sum_max.wasm", "_Z3sumi", int32(30))

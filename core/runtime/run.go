@@ -3,7 +3,7 @@ package runtime
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"math"
 	"reflect"
 	"wasm/core/IR"
 	"wasm/types"
@@ -136,6 +136,30 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 				frame = vm.GetCurrentFrame()
 			}
 		case IR.OPCcall:
+			frame.advance(1)
+			funcIndex := ins.Imm.(*IR.FunctionImm).FunctionIndex
+			vm.CurrentFrame += 1
+			if vm.CurrentFrame >= MAXFRAME {
+				vm.panic(types.ErrBeyondMaxFrame)
+			}
+
+			fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
+			paraCount := fType.Params.NumElems
+			if frame.Stack.Len() < int(paraCount) {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			params := make([]IR.InterfaceValue, paraCount)
+			for elemIndex := range fType.Params.Elems {
+				v, _ := frame.Stack.Pop()
+				params[int(paraCount)-1-elemIndex] = v
+			}
+
+			frame = vm.GetCurrentFrame()
+			err = frame.Init(int(funcIndex), vm, params)
+			if err != nil {
+				vm.panic(err)
+			}
+
 		case IR.OPCcall_indirect:
 		case IR.OPCdrop:
 			if frame.Stack.Len() < 1 {
@@ -239,6 +263,21 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCi64_store:
 		case IR.OPCf32_store:
 		case IR.OPCf64_store:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			valVal, _ := frame.Stack.Pop()
+			baseVal, _ := frame.Stack.Pop()
+			base := baseVal.Value().(int32)
+			val := valVal.Value().(float64)
+			offset := ins.Imm.(*IR.LoadOrStoreImm).Offset
+			addr := base + int32(offset)
+			if addr < 0 {
+				addr += int32(len(vm.Memory))
+			}
+			binary.LittleEndian.PutUint64(vm.Memory[addr:addr+8], math.Float64bits((val)))
+			frame.advance(1)
+
 		case IR.OPCi32_store8:
 		case IR.OPCi32_store16:
 		case IR.OPCi64_store8:
@@ -549,6 +588,14 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCf64_add:
 		case IR.OPCf64_sub:
 		case IR.OPCf64_mul:
+			if frame.Stack.Len() < 2 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			b, _ := frame.Stack.Pop()
+			a, _ := frame.Stack.Pop()
+			c := a.Value().(float64) * b.Value().(float64)
+			frame.Stack.Push(&Value{Typ: IR.TypeF64, Val: c})
+			frame.advance(1)
 		case IR.OPCf64_div:
 		case IR.OPCf64_min:
 		case IR.OPCf64_max:
@@ -632,11 +679,11 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 					}
 					return nil
 				} else {
+					frame = vm.GetCurrentFrame()
 					if hasResult {
 						//TODO assert frame.Stack is empty
 						frame.Stack.Push(retV)
 					}
-					frame = vm.GetCurrentFrame()
 				}
 			case -1:
 				vm.panic("end ins matched index illegal")
@@ -663,8 +710,8 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			frame.runBinaryOp(vm, &ins)
 		}
 		if lastPC == frame.PC {
-			vm.panic("PC not changed.")
-			logrus.Errorf("PC: %d instruction: %v", &frame, frame.Instruction[frame.PC])
+			panicStr := fmt.Sprintf("PC not changed. PC: %d instruction: %v", frame.PC, frame.Instruction[frame.PC].Op.Name)
+			vm.panic(panicStr)
 		}
 	}
 }
