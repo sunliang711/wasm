@@ -1,8 +1,11 @@
 package IR
 
+import "fmt"
+
 type ImmKind byte
 type Imm interface {
 	ImmKind() ImmKind
+	fmt.Stringer
 }
 
 const (
@@ -41,6 +44,9 @@ type AtomicLoadOrStoreImm struct {
 func (imm *AtomicLoadOrStoreImm) ImmKind() ImmKind {
 	return KindAtomicLoadOrStoreImm
 }
+func (imm *AtomicLoadOrStoreImm) String() string {
+	return fmt.Sprintf("{alignment: %v,offset: %v}", imm.AlignmengLog2, imm.Offset)
+}
 
 type BranchImm struct {
 	TargetDepth uint64
@@ -48,6 +54,9 @@ type BranchImm struct {
 
 func (imm *BranchImm) ImmKind() ImmKind {
 	return KindBranchImm
+}
+func (imm *BranchImm) String() string {
+	return fmt.Sprintf("{targetDepth: %v}", imm.TargetDepth)
 }
 
 type BranchTableImm struct {
@@ -58,6 +67,9 @@ type BranchTableImm struct {
 func (imm *BranchTableImm) ImmKind() ImmKind {
 	return KindBranchTableImm
 }
+func (imm *BranchTableImm) String() string {
+	return fmt.Sprintf("{defaultTargetDepth: %v,branchTableIndex: %v}", imm.DefaultTargetDepth, imm.BranchTableIndex)
+}
 
 type CallIndirectImm struct {
 	Type       IndexedFunctionType
@@ -66,6 +78,9 @@ type CallIndirectImm struct {
 
 func (imm *CallIndirectImm) ImmKind() ImmKind {
 	return KindCallIndirectImm
+}
+func (imm *CallIndirectImm) String() string {
+	return fmt.Sprintf("{type: %v,tableIndex: %v}", imm.Type, imm.TableIndex)
 }
 
 type Format byte
@@ -90,6 +105,9 @@ type ControlStructureImm struct {
 func (imm *ControlStructureImm) ImmKind() ImmKind {
 	return KindControlStructureImm
 }
+func (imm *ControlStructureImm) String() string {
+	return fmt.Sprintf("{type: %v}", imm.Type)
+}
 
 type DataSegmentAndMemImm struct {
 	DataSegmentIndex uint64
@@ -98,6 +116,9 @@ type DataSegmentAndMemImm struct {
 
 func (imm *DataSegmentAndMemImm) ImmKind() ImmKind {
 	return KindDataSegmentAndMemImm
+}
+func (imm *DataSegmentAndMemImm) String() string {
+	return fmt.Sprintf("{dataSegmentIndex: %v,memoryIndex: %v}", imm.DataSegmentIndex, imm.MemoryIndex)
 }
 
 type DataSegmentImm struct {
@@ -108,6 +129,10 @@ func (imm *DataSegmentImm) ImmKind() ImmKind {
 	return KindDataSegmentImm
 }
 
+func (imm *DataSegmentImm) String() string {
+	return fmt.Sprintf("{dataSegmentIndex: %v}", imm.DataSegmentIndex)
+}
+
 type ElemSegmentAndTableImm struct {
 	ElemSegmentIndex uint64
 	TableIndex       uint64
@@ -115,6 +140,9 @@ type ElemSegmentAndTableImm struct {
 
 func (imm *ElemSegmentAndTableImm) ImmKind() ImmKind {
 	return KindElemSegmentAndTableImm
+}
+func (imm *ElemSegmentAndTableImm) String() string {
+	return fmt.Sprintf("{elementSegmentIndex: %v,tableIndex: %v}")
 }
 
 type ElemSegmentImm struct {
@@ -124,6 +152,9 @@ type ElemSegmentImm struct {
 func (imm *ElemSegmentImm) ImmKind() ImmKind {
 	return KindElemSegmentImm
 }
+func (imm *ElemSegmentImm) String() string {
+	return fmt.Sprintf("{elemSegmentIndex: %v}", imm.ElemSegmentIndex)
+}
 
 type ExceptionTypeImm struct {
 	ExceptionTypeIndex uint64
@@ -131,6 +162,9 @@ type ExceptionTypeImm struct {
 
 func (imm *ExceptionTypeImm) ImmKind() ImmKind {
 	return KindExceptionTypeImm
+}
+func (imm *ExceptionTypeImm) String() string {
+	return fmt.Sprintf("{exceptionTypeIndex: %v}", imm.ExceptionTypeIndex)
 }
 
 type FunctionImm struct {
@@ -140,6 +174,9 @@ type FunctionImm struct {
 func (imm *FunctionImm) ImmKind() ImmKind {
 	return KindFunctionImm
 }
+func (imm *FunctionImm) String() string {
+	return fmt.Sprintf("{functionIndex: %v}", imm.FunctionIndex)
+}
 
 type GetOrSetVariableImm struct {
 	VariableIndex uint64
@@ -147,6 +184,9 @@ type GetOrSetVariableImm struct {
 
 func (imm *GetOrSetVariableImm) ImmKind() ImmKind {
 	return KindGetOrSetVariableImm
+}
+func (imm *GetOrSetVariableImm) String() string {
+	return fmt.Sprintf("{variableIndex: %v}", imm.VariableIndex)
 }
 
 type LaneIndexImm struct {
@@ -156,6 +196,9 @@ type LaneIndexImm struct {
 func (imm *LaneIndexImm) ImmKind() ImmKind {
 	return KindLaneIndexImm
 }
+func (imm *LaneIndexImm) String() string {
+	return fmt.Sprintf("{laneIndex: %v}", imm.LaneIndex)
+}
 
 type LiteralImm_F32 struct {
 	Value float32
@@ -163,6 +206,9 @@ type LiteralImm_F32 struct {
 
 func (imm *LiteralImm_F32) ImmKind() ImmKind {
 	return KindLiteralImm_F32
+}
+func (imm *LiteralImm_F32) String() string {
+	return fmt.Sprintf("{value: %v}", imm.Value)
 }
 
 type LiteralImm_F64 struct {
@@ -172,6 +218,9 @@ type LiteralImm_F64 struct {
 func (imm *LiteralImm_F64) ImmKind() ImmKind {
 	return KindLiteralImm_F64
 }
+func (imm *LiteralImm_F64) String() string {
+	return fmt.Sprintf("{value: %v}", imm.Value)
+}
 
 type LiteralImm_I32 struct {
 	Value int32
@@ -179,6 +228,9 @@ type LiteralImm_I32 struct {
 
 func (imm *LiteralImm_I32) ImmKind() ImmKind {
 	return KindLiteralImm_I32
+}
+func (imm *LiteralImm_I32) String() string {
+	return fmt.Sprintf("{value: %v}", imm.Value)
 }
 
 type LiteralImm_I64 struct {
@@ -188,6 +240,9 @@ type LiteralImm_I64 struct {
 func (imm *LiteralImm_I64) ImmKind() ImmKind {
 	return KindLiteralImm_I64
 }
+func (imm *LiteralImm_I64) String() string {
+	return fmt.Sprintf("{value: %v}", imm.Value)
+}
 
 type LiteralImm_V128 struct {
 	Value [16]byte
@@ -195,6 +250,9 @@ type LiteralImm_V128 struct {
 
 func (imm *LiteralImm_V128) ImmKind() ImmKind {
 	return KindLiteralImm_V128
+}
+func (imm *LiteralImm_V128) String() string {
+	return fmt.Sprintf("{value: %v}", imm.Value)
 }
 
 type LoadOrStoreImm struct {
@@ -206,6 +264,9 @@ type LoadOrStoreImm struct {
 func (imm *LoadOrStoreImm) ImmKind() ImmKind {
 	return KindLoadOrStoreImm
 }
+func (imm *LoadOrStoreImm) String() string {
+	return fmt.Sprintf("{alignment: %v,offset: %v}", imm.AlignmentLog2, imm.Offset)
+}
 
 type MemoryImm struct {
 	MemoryIndex uint64
@@ -214,12 +275,18 @@ type MemoryImm struct {
 func (imm *MemoryImm) ImmKind() ImmKind {
 	return KindMemoryImm
 }
+func (imm *MemoryImm) String() string {
+	return fmt.Sprintf("{memoryIndex: %v}", imm.MemoryIndex)
+}
 
 type NoImm struct {
 }
 
 func (imm *NoImm) ImmKind() ImmKind {
 	return KindNoImm
+}
+func (imm *NoImm) String() string {
+	return "{noimm}"
 }
 
 type RethrowImm struct {
@@ -229,6 +296,9 @@ type RethrowImm struct {
 func (imm *RethrowImm) ImmKind() ImmKind {
 	return KindRethrowImm
 }
+func (imm *RethrowImm) String() string {
+	return fmt.Sprintf("{catchDepth: %v}", imm.CatchDepth)
+}
 
 type ShuffleImm_16 struct {
 	LaneIndices [16]byte
@@ -237,6 +307,9 @@ type ShuffleImm_16 struct {
 func (imm *ShuffleImm_16) ImmKind() ImmKind {
 	return KindShuffleImm_16
 }
+func (imm *ShuffleImm_16) String() string {
+	return fmt.Sprintf("{laneIndices: %v}", imm.LaneIndices)
+}
 
 type TableImm struct {
 	TableIndex uint64
@@ -244,4 +317,7 @@ type TableImm struct {
 
 func (imm *TableImm) ImmKind() ImmKind {
 	return KindTableImm
+}
+func (imm *TableImm) String() string {
+	return fmt.Sprintf("{tableIndex: %v}", imm.TableIndex)
 }

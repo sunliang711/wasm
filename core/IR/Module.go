@@ -47,20 +47,24 @@ func (m *Module) GetFuncIndexWithName(name string) (int, error) {
 	return -1, fmt.Errorf(types.ErrFuncNotFound)
 }
 
-func (m *Module) GetAllFuncIns() string {
+func (m *Module) GetAllFuncIns(detail bool) string {
 	ret := ""
 	for _, f := range m.Functions.Defs {
 		ret += fmt.Sprintf("Function: %s { \n", f.Name)
 		for i, ins := range f.Instruction {
-			ret += fmt.Sprintf("[%06d]:%-12s", i, ins.Op.Name)
-			if i != len(f.Instruction)-1 {
-				ret += ", "
+			if detail {
+				ret += fmt.Sprintf("[%06d]:%-12s %s\n", i, ins.Op.Name, ins.Imm.String())
+			} else {
+				ret += fmt.Sprintf("[%06d]:%-12s\n", i, ins.Op.Name)
 			}
-			if (i+1)%8 == 0 && i != len(f.Instruction)-1 {
-				ret += "\n"
-			}
+			//if i != len(f.Instruction)-1 {
+			//	ret += ", "
+			//}
+			//if (i+1)%8 == 0 && i != len(f.Instruction)-1 {
+			//	ret += "\n"
+			//}
 		}
-		ret += "\n}\n"
+		ret += "}\n"
 	}
 	return ret
 }
