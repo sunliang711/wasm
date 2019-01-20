@@ -211,7 +211,23 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			frame.Locals[index] = a
 			frame.advance(1)
 		case IR.OPCget_global:
+			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			if index >= uint64(len(vm.Global)) {
+				vm.panic("get_local index out of range")
+			}
+			frame.Stack.Push(vm.Global[index])
+			frame.advance(1)
 		case IR.OPCset_global:
+			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			if index >= uint64(len(vm.Global)) {
+				vm.panic("set_local index out of range")
+			}
+			if frame.Stack.Len() < 1 {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			a, _ := frame.Stack.Pop()
+			vm.Global[index] = a
+			frame.advance(1)
 		case IR.OPCtable_get:
 		case IR.OPCtable_set:
 		case IR.OPCthrow_:
