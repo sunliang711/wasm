@@ -26,9 +26,9 @@ func TestMax(t *testing.T) {
 	test(t, "../../example/sum_max.wasm", "_Z3maxii", int32(30), int32(5))
 }
 
-func TestArea(t *testing.T){
+func TestArea(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t,"../../example/area.wasm","_Z4aread",float64(10))
+	test(t, "../../example/area.wasm", "_Z4aread", float64(10))
 }
 func TestSum(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
@@ -63,28 +63,8 @@ func test(t *testing.T, filename string, funcName string, params ...interface{})
 }
 
 func TestPrintAllIns(t *testing.T) {
-	wasmFile := "/Users/eagle/Downloads/77.wasm"
-	wasmFile = "/Users/eagle/Downloads/add3.wasm"
-	wasmFile = "/Users/eagle/Downloads/hello.wasm"
-	wasmFile = "/Users/eagle/Downloads/main.wasm"
-	wasmFile = "/Users/eagle/Downloads/ret1.wasm"
-	wasmFile = "/Users/eagle/Downloads/sqr.wasm"
-	wasmFile = "/Users/eagle/Downloads/sum.wasm"
-	wasmFile = "/Users/eagle/Downloads/add.wasm"
-	wasmFile = "/Users/eagle/Downloads/fibo.wasm"
-	wasmFile = "/Users/eagle/Downloads/helloworld.wasm"
-	wasmFile = "/Users/eagle/Downloads/max.wasm"
-	wasmFile = "/Users/eagle/Downloads/ret93.wasm"
-	wasmFile = "/Users/eagle/Downloads/squareSum.wasm"
-	wasmFile = "/Users/eagle/Downloads/test.wasm"
-	wasmFile = "/Users/eagle/Downloads/add2.wasm"
-	wasmFile = "/Users/eagle/Downloads/global.wasm"
-	wasmFile = "/Users/eagle/Downloads/i32store.wasm"
-	wasmFile = "/Users/eagle/Downloads/pow.wasm"
-	wasmFile = "/Users/eagle/Downloads/simple.wasm"
-	wasmFile = "/Users/eagle/Downloads/squareSum2.wasm"
-	wasmFile = "/Users/eagle/Downloads/useadd.wasm"
-	wasmFile = "../../example/test.wasm"
+	logrus.SetLevel(logrus.ErrorLevel)
+	wasmFile := "../../example/test.wasm"
 	wasmFile = "../../example/br_if_memory.wasm"
 	parser, err := parser.NewParser(wasmFile)
 	if err != nil {
@@ -94,5 +74,30 @@ func TestPrintAllIns(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(parser.Module.GetAllFuncIns())
+	t.Log(parser.Module.GetAllFuncIns(true))
+}
+
+func TestLoadStoreI32(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/i32LoadStore.wasm", "_Z1fv")
+}
+
+func TestLoadStoreI64(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/i64LoadStore.wasm", "_Z1fv")
+}
+
+func TestI32Load8_s(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/i32Load8_s.wasm", "_Z1fv")
+}
+
+func TestLoadStoreF32(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/f32LoadStore.wasm", "_Z1fv")
+}
+
+func TestLoadStoreF64(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/f64LoadStore.wasm", "_Z1fv")
 }
