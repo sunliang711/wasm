@@ -503,6 +503,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCi32_shr_u:
 		case IR.OPCi32_rotl:
 		case IR.OPCi32_rotr:
+
 		case IR.OPCi64_clz:
 		case IR.OPCi64_ctz:
 		case IR.OPCi64_popcnt:
@@ -559,6 +560,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCf32_min:
 		case IR.OPCf32_max:
 		case IR.OPCf32_copysign:
+
 		case IR.OPCf64_abs:
 		case IR.OPCf64_neg:
 		case IR.OPCf64_ceil:
@@ -581,6 +583,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCf64_min:
 		case IR.OPCf64_max:
 		case IR.OPCf64_copysign:
+
 		case IR.OPCi32_wrap_i64:
 		case IR.OPCi32_trunc_s_f32:
 		case IR.OPCi32_trunc_u_f32:
