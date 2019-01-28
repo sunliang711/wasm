@@ -1,11 +1,9 @@
 package parser
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"sync"
 	"wasm/core/IR"
 	"wasm/types"
@@ -43,14 +41,9 @@ func (sec Section) String() string {
 	return fmt.Sprintf("{Type: %d,NumSectionBytes: %d,Data: %v}", sec.Type, sec.NumSectionBytes, sec.Data)
 }
 
-func NewParser(filename string) (*Parser, error) {
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
+func NewParser(stream io.Reader) (*Parser, error) {
 	return &Parser{
-		Stream:                      bytes.NewReader(content),
+		Stream:                      stream,
 		ChSection:                   make(chan *Section),
 		ChErr:                       make(chan error),
 		ChQuit:                      make(chan struct{}),

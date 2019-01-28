@@ -3,6 +3,7 @@ package runtime
 import (
 	"wasm/core/IR"
 	"wasm/types"
+	"wasm/utils"
 )
 
 const (
@@ -14,7 +15,8 @@ const (
 	CMP_GE
 )
 
-func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) {
+func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -107,9 +109,12 @@ func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) {
 			}
 		}
 	}
+	frame.advance(1)
+	return
 }
 
-func i64_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) {
+func i64_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -202,9 +207,12 @@ func i64_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) {
 			}
 		}
 	}
+	frame.advance(1)
+	return
 }
 
-func f32_compare(vm *VM, frame *Frame, cmpType byte) {
+func f32_compare(vm *VM, frame *Frame, cmpType byte) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -254,9 +262,12 @@ func f32_compare(vm *VM, frame *Frame, cmpType byte) {
 			frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
 		}
 	}
+	frame.advance(1)
+	return
 }
 
-func f64_compare(vm *VM, frame *Frame, cmpType byte) {
+func f64_compare(vm *VM, frame *Frame, cmpType byte) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -306,4 +317,6 @@ func f64_compare(vm *VM, frame *Frame, cmpType byte) {
 			frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
 		}
 	}
+	frame.advance(1)
+	return
 }

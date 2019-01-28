@@ -1,7 +1,9 @@
 package runtime
 
 import (
+	"bytes"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"testing"
 	"wasm/parser"
 )
@@ -35,7 +37,11 @@ func TestSum(t *testing.T) {
 	test(t, "../../example/sum_max.wasm", "_Z3sumi", int32(30))
 }
 func test(t *testing.T, filename string, funcName string, params ...interface{}) {
-	parser, err := parser.NewParser(filename)
+	bs, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parser, err := parser.NewParser(bytes.NewReader(bs))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +72,11 @@ func TestPrintAllIns(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
 	wasmFile := "../../example/test.wasm"
 	wasmFile = "../../example/br_if_memory.wasm"
-	parser, err := parser.NewParser(wasmFile)
+	bs, err := ioutil.ReadFile(wasmFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parser, err := parser.NewParser(bytes.NewReader(bs))
 	if err != nil {
 		t.Fatal(err)
 	}

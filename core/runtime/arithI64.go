@@ -4,9 +4,11 @@ import (
 	"math/bits"
 	"wasm/core/IR"
 	"wasm/types"
+	"wasm/utils"
 )
 
-func i64_arith(vm *VM, frame *Frame, arithType byte) {
+func i64_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -355,4 +357,6 @@ func i64_arith(vm *VM, frame *Frame, arithType byte) {
 			vm.panic("i64.rotr oprand not (u)i64")
 		}
 	}
+	frame.advance(1)
+	return
 }

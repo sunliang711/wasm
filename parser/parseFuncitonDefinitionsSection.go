@@ -88,6 +88,9 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 }
 
 func buildInsRelationship(ins []IR.Instruction) ([]int, error) {
+	//if -> (else|end[when without 'else')
+	//else -> end
+	//end ->(block|loop|if)
 	if len(ins) == 0 {
 		return nil, fmt.Errorf("Empty instruction")
 	}
@@ -105,11 +108,11 @@ func buildInsRelationship(ins []IR.Instruction) ([]int, error) {
 		case IR.OPCif_:
 			ifStack.Push(&ins[index])
 		case IR.OPCelse_:
-			t, err := ifStack.Pop()
+			popedIns, err := ifStack.Pop()
 			if err != nil {
 				return nil, fmt.Errorf("buildInsRelationship(): ifStack empty")
 			}
-			t.(*IR.Instruction).MatchedIndex = ins[index].Index
+			popedIns.(*IR.Instruction).MatchedIndex = ins[index].Index
 		case IR.OPCend:
 			endIndice = append(endIndice, ins[index].Index)
 		INNER_LOOP:
@@ -121,7 +124,15 @@ func buildInsRelationship(ins []IR.Instruction) ([]int, error) {
 				switch popedIns.(*IR.Instruction).Op.Code {
 				case IR.OPCif_, IR.OPCloop, IR.OPCblock:
 					ins[index].MatchedIndex = popedIns.(*IR.Instruction).Index
+					if popedIns.(*IR.Instruction).Op.Code == IR.OPCif_ {
+						if popedIns.(*IR.Instruction).MatchedIndex == -1 {
+							//'if' without 'else','if' -> 'end'
+							popedIns.(*IR.Instruction).MatchedIndex = ins[index].Index
+						}
+					}
 					break INNER_LOOP
+				case IR.OPCelse_:
+					popedIns.(*IR.Instruction).MatchedIndex = ins[index].Index
 				}
 			}
 		}

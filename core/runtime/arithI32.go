@@ -4,6 +4,7 @@ import (
 	"math/bits"
 	"wasm/core/IR"
 	"wasm/types"
+	"wasm/utils"
 )
 
 const (
@@ -23,7 +24,8 @@ const (
 	ARITH_ROTR
 )
 
-func i32_arith(vm *VM, frame *Frame, arithType byte) {
+func i32_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -372,4 +374,35 @@ func i32_arith(vm *VM, frame *Frame, arithType byte) {
 			vm.panic("i32.rotr oprand not (u)i32")
 		}
 	}
+	frame.advance(1)
+	return
+}
+
+const (
+	I32_EQZ byte = iota
+	I64_EQZ
+)
+
+func eqz(vm *VM, frame *Frame, eqType byte) (err error) {
+	defer utils.CatchError(&err)
+	a, err := pop1(vm, frame)
+	if err != nil {
+		panic(err)
+	}
+	switch eqType {
+	case I32_EQZ:
+		if IsZero(a) {
+			frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+		} else {
+			frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+		}
+	case I64_EQZ:
+		if IsZero(a) {
+			frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
+		} else {
+			frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
+		}
+	}
+	frame.advance(1)
+	return
 }

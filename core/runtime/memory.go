@@ -5,9 +5,11 @@ import (
 	"math"
 	"wasm/core/IR"
 	"wasm/types"
+	"wasm/utils"
 )
 
-func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) {
+func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Empty() {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -39,9 +41,12 @@ func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bo
 	default:
 		vm.panic("i32_load numBytes error")
 	}
+	frame.advance(1)
+	return
 }
 
-func i64_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) {
+func i64_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Empty() {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -80,9 +85,12 @@ func i64_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bo
 	default:
 		vm.panic("i64_load numBytes error")
 	}
+	frame.advance(1)
+	return
 }
 
-func i32_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
+func i32_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -104,11 +112,13 @@ func i32_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
 		binary.LittleEndian.PutUint32(vm.Memory[addr:addr+4], uint32(val))
 	default:
 		vm.panic("i32_store numBytes error")
-
 	}
+	frame.advance(1)
+	return
 }
 
-func i64_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
+func i64_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -132,12 +142,13 @@ func i64_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
 		binary.LittleEndian.PutUint64(vm.Memory[addr:addr+8], uint64(val))
 	default:
 		vm.panic("i64_store numBytes error")
-
 	}
+	frame.advance(1)
+	return
 }
 
-func float_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
-
+func float_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
 	}
@@ -158,9 +169,12 @@ func float_store(vm *VM, frame *Frame, offset uint32, numBytes int) {
 	default:
 		vm.panic("float_store numBytes error")
 	}
+	frame.advance(1)
+	return
 }
 
-func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) {
+func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+	defer utils.CatchError(&err)
 
 	if frame.Stack.Empty() {
 		vm.panic(types.ErrStackSizeErr)
@@ -182,4 +196,6 @@ func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) {
 	default:
 		vm.panic("float_load numBytes error")
 	}
+	frame.advance(1)
+	return
 }

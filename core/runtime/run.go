@@ -8,21 +8,6 @@ import (
 	"wasm/utils"
 )
 
-func IsZero(v IR.InterfaceValue) bool {
-	switch v.Type() {
-	case IR.TypeI32:
-		return v.Value().(int32) == 0
-	case IR.TypeI64:
-		return v.Value().(int64) == 0
-	case IR.TypeF32:
-		return v.Value().(float32) == 0
-	case IR.TypeF64:
-		return v.Value().(float64) == 0
-	default:
-		return false
-	}
-}
-
 func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err error) {
 	//TODO check all type assertion
 	defer utils.CatchError(&err)
@@ -86,6 +71,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 	if err != nil {
 		vm.panic(err)
 	}
+	ifStack := utils.Stack{}
 	//Execute
 	for {
 		lastPC := frame.PC
@@ -233,356 +219,264 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCnop:
 			frame.advance(1)
 		case IR.OPCi32_load:
-			i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, true)
-			frame.advance(1)
+			err = i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, true)
 		case IR.OPCi64_load:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8, true)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8, true)
 		case IR.OPCf32_load:
-			float_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
-			frame.advance(1)
+			err = float_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
 		case IR.OPCf64_load:
-			float_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
-			frame.advance(1)
+			err = float_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
 		case IR.OPCi32_load8_s:
-			i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, true)
-			frame.advance(1)
+			err = i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, true)
 		case IR.OPCi32_load8_u:
-			i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, false)
-			frame.advance(1)
+			err = i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, false)
 		case IR.OPCi32_load16_s:
-			i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, true)
-			frame.advance(1)
+			err = i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, true)
 		case IR.OPCi32_load16_u:
-			i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, false)
-			frame.advance(1)
+			err = i32_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, false)
 		case IR.OPCi64_load8_s:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, true)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, true)
 		case IR.OPCi64_load8_u:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, false)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1, false)
 		case IR.OPCi64_load16_s:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, true)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, true)
 		case IR.OPCi64_load16_u:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, false)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2, false)
 		case IR.OPCi64_load32_s:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, true)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, true)
 		case IR.OPCi64_load32_u:
-			i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, false)
-			frame.advance(1)
+			err = i64_load(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4, false)
 		case IR.OPCi32_store:
-			i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
-			frame.advance(1)
+			err = i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
 		case IR.OPCi64_store:
-			i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
-			frame.advance(1)
+			err = i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
 		case IR.OPCf32_store:
-			float_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
-			frame.advance(1)
+			err = float_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
 		case IR.OPCf64_store:
-			float_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
-			frame.advance(1)
+			err = float_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 8)
 		case IR.OPCi32_store8:
-			i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1)
-			frame.advance(1)
+			err = i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1)
 		case IR.OPCi32_store16:
-			i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2)
-			frame.advance(1)
+			err = i32_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2)
 		case IR.OPCi64_store8:
-			i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1)
-			frame.advance(1)
+			err = i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 1)
 		case IR.OPCi64_store16:
-			i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2)
-			frame.advance(1)
+			err = i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 2)
 		case IR.OPCi64_store32:
-			i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
-			frame.advance(1)
+			err = i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
 		case IR.OPCmemory_size:
 		case IR.OPCmemory_grow:
 		case IR.OPCi32_const:
-			val := ins.Imm.(*IR.LiteralImm_I32).Value
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: val})
-			frame.advance(1)
+			defConst(vm, frame, I32_CONST)
 		case IR.OPCi64_const:
-			val := ins.Imm.(*IR.LiteralImm_I64).Value
-			frame.Stack.Push(&Value{IR.TypeI64, val})
-			frame.advance(1)
+			defConst(vm, frame, I64_CONST)
 		case IR.OPCf32_const:
-			val := ins.Imm.(*IR.LiteralImm_F32).Value
-			frame.Stack.Push(&Value{IR.TypeF32, val})
-			frame.advance(1)
+			defConst(vm, frame, F32_CONST)
 		case IR.OPCf64_const:
-			val := ins.Imm.(*IR.LiteralImm_F64).Value
-			frame.Stack.Push(&Value{IR.TypeF64, val})
-			frame.advance(1)
+			defConst(vm, frame, F64_CONST)
 		case IR.OPCi32_eqz:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			if a.Value().(int32) == 0 {
-				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
-			} else {
-				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
-			}
-			frame.advance(1)
+			err = eqz(vm, frame, I32_EQZ)
 		case IR.OPCi32_eq:
-			i32_compare(vm, frame, CMP_EQ, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_EQ, true)
 		case IR.OPCi32_ne:
-			i32_compare(vm, frame, CMP_NE, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_NE, true)
 		case IR.OPCi32_lt_s:
-			i32_compare(vm, frame, CMP_LT, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_LT, true)
 		case IR.OPCi32_lt_u:
-			i32_compare(vm, frame, CMP_LT, false)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_LT, false)
 		case IR.OPCi32_gt_s:
-			i32_compare(vm, frame, CMP_GT, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_GT, true)
 		case IR.OPCi32_gt_u:
-			i32_compare(vm, frame, CMP_GT, false)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_GT, false)
 		case IR.OPCi32_le_s:
-			i32_compare(vm, frame, CMP_LE, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_LE, true)
 		case IR.OPCi32_le_u:
-			i32_compare(vm, frame, CMP_LE, false)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_LE, false)
 		case IR.OPCi32_ge_s:
-			i32_compare(vm, frame, CMP_GE, true)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_GE, true)
 		case IR.OPCi32_ge_u:
-			i32_compare(vm, frame, CMP_GE, false)
-			frame.advance(1)
+			err = i32_compare(vm, frame, CMP_GE, false)
 
 		case IR.OPCi64_eqz:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			if a.Value().(int64) == 0 {
-				frame.Stack.Push(&Value{IR.TypeI32, int32(1)})
-			} else {
-				frame.Stack.Push(&Value{IR.TypeI32, int32(0)})
-			}
-			frame.advance(1)
+			err = eqz(vm, frame, I64_EQZ)
 		case IR.OPCi64_eq:
-			i64_compare(vm, frame, CMP_EQ, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_EQ, true)
 		case IR.OPCi64_ne:
-			i64_compare(vm, frame, CMP_NE, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_NE, true)
 		case IR.OPCi64_lt_s:
-			i64_compare(vm, frame, CMP_LT, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_LT, true)
 		case IR.OPCi64_lt_u:
-			i64_compare(vm, frame, CMP_LT, false)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_LT, false)
 		case IR.OPCi64_gt_s:
-			i64_compare(vm, frame, CMP_GT, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_GT, true)
 		case IR.OPCi64_gt_u:
-			i64_compare(vm, frame, CMP_GT, false)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_GT, false)
 		case IR.OPCi64_le_s:
-			i64_compare(vm, frame, CMP_LE, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_LE, true)
 		case IR.OPCi64_le_u:
-			i64_compare(vm, frame, CMP_LE, false)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_LE, false)
 		case IR.OPCi64_ge_s:
-			i64_compare(vm, frame, CMP_GE, true)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_GE, true)
 		case IR.OPCi64_ge_u:
-			i64_compare(vm, frame, CMP_GE, false)
-			frame.advance(1)
+			err = i64_compare(vm, frame, CMP_GE, false)
 		case IR.OPCf32_eq:
-			f32_compare(vm, frame, CMP_EQ)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_EQ)
 		case IR.OPCf32_ne:
-			f32_compare(vm, frame, CMP_NE)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_NE)
 		case IR.OPCf32_lt:
-			f32_compare(vm, frame, CMP_LT)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_LT)
 		case IR.OPCf32_gt:
-			f32_compare(vm, frame, CMP_GT)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_GT)
 		case IR.OPCf32_le:
-			f32_compare(vm, frame, CMP_LE)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_LE)
 		case IR.OPCf32_ge:
-			f32_compare(vm, frame, CMP_GE)
-			frame.advance(1)
+			err = f32_compare(vm, frame, CMP_GE)
 		case IR.OPCf64_eq:
-			f64_compare(vm, frame, CMP_EQ)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_EQ)
 		case IR.OPCf64_ne:
-			f64_compare(vm, frame, CMP_NE)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_NE)
 		case IR.OPCf64_lt:
-			f64_compare(vm, frame, CMP_LT)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_LT)
 		case IR.OPCf64_gt:
-			f64_compare(vm, frame, CMP_GT)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_GT)
 		case IR.OPCf64_le:
-			f64_compare(vm, frame, CMP_LE)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_LE)
 		case IR.OPCf64_ge:
-			f64_compare(vm, frame, CMP_GE)
-			frame.advance(1)
+			err = f64_compare(vm, frame, CMP_GE)
 
 		case IR.OPCi32_clz:
+			err = clz(vm, frame, I32_CLZ)
 		case IR.OPCi32_ctz:
+			err = ctz(vm, frame, I32_CTZ)
 		case IR.OPCi32_popcnt:
+			err = popcnt(vm, frame, I32_POPCNT)
 		case IR.OPCi32_add:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(int32) + b.Value().(int32)
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
-			frame.advance(1)
+			err = i32_arith(vm, frame, ARITH_ADD)
 		case IR.OPCi32_sub:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(int32) - b.Value().(int32)
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
-			frame.advance(1)
+			err = i32_arith(vm, frame, ARITH_SUB)
 		case IR.OPCi32_mul:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(int32) * b.Value().(int32)
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: c})
-			frame.advance(1)
+			err = i32_arith(vm, frame, ARITH_MUL)
 		case IR.OPCi32_div_s:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			if b.Value().(int32) == 0 {
-				vm.panic(types.ErrDivideByZero)
-			}
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(int32) / b.Value().(int32)
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: int32(c)})
-			frame.advance(1)
+			err = i32_arith(vm, frame, ARITH_DIV)
 		case IR.OPCi32_div_u:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			if b.Value().(uint32) == 0 {
-				vm.panic(types.ErrDivideByZero)
-			}
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(uint32) / b.Value().(uint32)
-			frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: uint32(c)})
-			frame.advance(1)
+			err = i32_arith(vm, frame, ARITH_DIV)
 		case IR.OPCi32_rem_s:
+			err = i32_arith(vm, frame, ARITH_REM)
 		case IR.OPCi32_rem_u:
+			err = i32_arith(vm, frame, ARITH_REM)
 		case IR.OPCi32_and_:
+			err = i32_arith(vm, frame, ARITH_AND)
 		case IR.OPCi32_or_:
+			err = i32_arith(vm, frame, ARITH_OR)
 		case IR.OPCi32_xor_:
+			err = i32_arith(vm, frame, ARITH_XOR)
 		case IR.OPCi32_shl:
+			err = i32_arith(vm, frame, ARITH_SHL)
 		case IR.OPCi32_shr_s:
+			err = i32_arith(vm, frame, ARITH_SHR)
 		case IR.OPCi32_shr_u:
+			err = i32_arith(vm, frame, ARITH_SHR)
 		case IR.OPCi32_rotl:
+			err = i32_arith(vm, frame, ARITH_ROTL)
 		case IR.OPCi32_rotr:
+			err = i32_arith(vm, frame, ARITH_ROTR)
 
 		case IR.OPCi64_clz:
+			err = clz(vm, frame, I64_CLZ)
 		case IR.OPCi64_ctz:
+			err = ctz(vm, frame, I64_CTZ)
 		case IR.OPCi64_popcnt:
+			err = popcnt(vm, frame, I64_POPCNT)
 		case IR.OPCi64_add:
+			err = i64_arith(vm, frame, ARITH_AND)
 		case IR.OPCi64_sub:
+			err = i64_arith(vm, frame, ARITH_SUB)
 		case IR.OPCi64_mul:
+			err = i64_arith(vm, frame, ARITH_MUL)
 		case IR.OPCi64_div_s:
+			err = i64_arith(vm, frame, ARITH_DIV)
 		case IR.OPCi64_div_u:
+			err = i64_arith(vm, frame, ARITH_DIV)
 		case IR.OPCi64_rem_s:
+			err = i64_arith(vm, frame, ARITH_REM)
 		case IR.OPCi64_rem_u:
+			err = i64_arith(vm, frame, ARITH_REM)
 		case IR.OPCi64_and_:
+			err = i64_arith(vm, frame, ARITH_AND)
 		case IR.OPCi64_or_:
+			err = i64_arith(vm, frame, ARITH_OR)
 		case IR.OPCi64_xor_:
+			err = i64_arith(vm, frame, ARITH_XOR)
 		case IR.OPCi64_shl:
+			err = i64_arith(vm, frame, ARITH_SHL)
 		case IR.OPCi64_shr_s:
+			err = i64_arith(vm, frame, ARITH_SHR)
 		case IR.OPCi64_shr_u:
+			err = i64_arith(vm, frame, ARITH_SHR)
 		case IR.OPCi64_rotl:
+			err = i64_arith(vm, frame, ARITH_ROTL)
 		case IR.OPCi64_rotr:
+			err = i64_arith(vm, frame, ARITH_ROTR)
+
 		case IR.OPCf32_abs:
+			err = f32Abs(vm, frame)
 		case IR.OPCf32_neg:
+			err = f32Neg(vm, frame)
 		case IR.OPCf32_ceil:
+			err = f32Ceil(vm, frame)
 		case IR.OPCf32_floor:
+			err = f32Floor(vm, frame)
 		case IR.OPCf32_trunc:
+			err = f32Trunc(vm, frame)
 		case IR.OPCf32_nearest:
+			err = f32Nearest(vm, frame)
 		case IR.OPCf32_sqrt:
+			err = f32Sqrt(vm, frame)
+
 		case IR.OPCf32_add:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(float32) + b.Value().(float32)
-			frame.Stack.Push(&Value{Typ: IR.TypeF32, Val: c})
-			frame.advance(1)
+			err = f32_arith(vm, frame, ARITH_ADD)
 		case IR.OPCf32_sub:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(float32) - b.Value().(float32)
-			frame.Stack.Push(&Value{Typ: IR.TypeF32, Val: c})
-			frame.advance(1)
+			err = f32_arith(vm, frame, ARITH_SUB)
 		case IR.OPCf32_mul:
+			err = f32_arith(vm, frame, ARITH_MUL)
 		case IR.OPCf32_div:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			v := a.Value().(float32) / b.Value().(float32)
-			frame.Stack.Push(&Value{IR.TypeF32, v})
-			frame.advance(1)
+			err = f32_arith(vm, frame, ARITH_DIV)
 		case IR.OPCf32_min:
+			err = f32_arith(vm, frame, ARITH_MIN)
 		case IR.OPCf32_max:
+			err = f32_arith(vm, frame, ARITH_MAX)
 		case IR.OPCf32_copysign:
+			err = f32copySign(vm, frame)
 
 		case IR.OPCf64_abs:
+			err = f64Abs(vm, frame)
 		case IR.OPCf64_neg:
+			err = f64Neg(vm, frame)
 		case IR.OPCf64_ceil:
+			err = f64Ceil(vm, frame)
 		case IR.OPCf64_floor:
+			err = f64Floor(vm, frame)
 		case IR.OPCf64_trunc:
+			err = f64Trunc(vm, frame)
 		case IR.OPCf64_nearest:
+			err = f64Nearest(vm, frame)
 		case IR.OPCf64_sqrt:
+			err = f64Sqrt(vm, frame)
+
 		case IR.OPCf64_add:
+			err = f64_arith(vm, frame, ARITH_ADD)
 		case IR.OPCf64_sub:
+			err = f64_arith(vm, frame, ARITH_SUB)
 		case IR.OPCf64_mul:
-			if frame.Stack.Len() < 2 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			b, _ := frame.Stack.Pop()
-			a, _ := frame.Stack.Pop()
-			c := a.Value().(float64) * b.Value().(float64)
-			frame.Stack.Push(&Value{Typ: IR.TypeF64, Val: c})
-			frame.advance(1)
+			err = f64_arith(vm, frame, ARITH_MUL)
 		case IR.OPCf64_div:
+			err = f64_arith(vm, frame, ARITH_DIV)
 		case IR.OPCf64_min:
+			err = f64_arith(vm, frame, ARITH_MIN)
 		case IR.OPCf64_max:
+			err = f64_arith(vm, frame, ARITH_MAX)
 		case IR.OPCf64_copysign:
+			err = f64copySign(vm, frame)
 
 		case IR.OPCi32_wrap_i64:
 		case IR.OPCi32_trunc_s_f32:
@@ -638,13 +532,24 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 				vm.panic(types.ErrStackSizeErr)
 			}
 			con, _ := frame.Stack.Pop()
-			v := con.Value().(int32)
-			if v == 1 {
-				frame.advanceTo(1)
+			if !IsZero(con) {
+				ifStack.Push(ins.Index)
+				frame.advance(1)
 			} else {
-				//TODO advanctTo else or end
+				//advanctTo else or end
+				nextIndex := ins.MatchedIndex
+				if nextIndex == -1 {
+					vm.panic("if without else or end")
+				}
+				frame.advanceTo(nextIndex)
 			}
 		case IR.OPCelse_:
+			if ifStack.Empty() {
+				frame.advance(1)
+			} else {
+				frame.advanceTo(ins.MatchedIndex)
+			}
+
 		case IR.OPCend:
 			switch ins.MatchedIndex {
 			case types.LastOpcode:
@@ -681,6 +586,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 				case IR.OPCblock:
 					frame.advance(1)
 				case IR.OPCif_:
+					ifStack.Pop()
 					frame.advance(1)
 				case IR.OPCloop:
 					frame.advanceTo(mindex + 1)
@@ -694,6 +600,9 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCcatch_all:
 		default:
 			frame.runBinaryOp(vm, &ins)
+		}
+		if err != nil {
+			vm.panic(err)
 		}
 		if lastPC == frame.PC {
 			panicStr := fmt.Sprintf("PC not changed. PC: %d instruction: %v", frame.PC, frame.Instruction[frame.PC].Op.Name)
