@@ -1,6 +1,9 @@
 package runtime
 
-import "wasm/core/IR"
+import (
+	"wasm/core/IR"
+	"wasm/utils"
+)
 
 const (
 	I32_CONST byte = iota
@@ -9,22 +12,42 @@ const (
 	F64_CONST
 )
 
-func defConst(vm *VM, frame *Frame, constType byte) {
+func defConst(vm *VM, frame *Frame, constType byte) (err error) {
+	defer utils.CatchError(&err)
 	ins := frame.Instruction[frame.PC]
 	switch constType {
 	case I32_CONST:
-		val := ins.Imm.(*IR.LiteralImm_I32).Value
+		literalImm, ok := ins.Imm.(*IR.LiteralImm_I32)
+		if !ok {
+			panic("i32.const imm invalid")
+		}
+		val := literalImm.Value
 		frame.Stack.Push(&Value{Typ: IR.TypeI32, Val: val})
 	case I64_CONST:
-		val := ins.Imm.(*IR.LiteralImm_I64).Value
+		literalImm, ok := ins.Imm.(*IR.LiteralImm_I64)
+		if !ok {
+			panic("i64.const imm invalid")
+		}
+		val := literalImm.Value
 		frame.Stack.Push(&Value{IR.TypeI64, val})
 	case F32_CONST:
-		val := ins.Imm.(*IR.LiteralImm_F32).Value
+		literalImm, ok := ins.Imm.(*IR.LiteralImm_F32)
+		if !ok {
+			panic("f32.const imm invalid")
+		}
+		val := literalImm.Value
 		frame.Stack.Push(&Value{IR.TypeF32, val})
 	case F64_CONST:
-		val := ins.Imm.(*IR.LiteralImm_F64).Value
+		literalImm, ok := ins.Imm.(*IR.LiteralImm_F64)
+		if !ok {
+			panic("f64.const imm invalid")
+		}
+		val := literalImm.Value
 		frame.Stack.Push(&Value{IR.TypeF64, val})
+	default:
+		panic("defConst const type invalid")
 	}
 
 	frame.advance(1)
+	return
 }

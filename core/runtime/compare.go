@@ -17,11 +17,10 @@ const (
 
 func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) {
 	defer utils.CatchError(&err)
-	if frame.Stack.Len() < 2 {
-		vm.panic(types.ErrStackSizeErr)
+	b, a, err := pop2(vm, frame)
+	if err != nil {
+		panic(err)
 	}
-	b, _ := frame.Stack.Pop()
-	a, _ := frame.Stack.Pop()
 	if a.Type() != b.Type() {
 		vm.panic("cmp type not match")
 	}

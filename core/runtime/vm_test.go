@@ -111,3 +111,9 @@ func TestLoadStoreF64(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
 	test(t, "../../example/f64LoadStore.wasm", "_Z1fv")
 }
+
+func TestWrap64To32(t *testing.T) {
+	var i64 int64 = 0x1234567811223344
+	var i32 int32 = int32(i64)
+	t.Logf("%#x", i32)
+}

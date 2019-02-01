@@ -81,17 +81,29 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCunreachable:
 			vm.panic("unreachable executed")
 		case IR.OPCbr:
-			td := ins.Imm.(*IR.BranchImm).TargetDepth
+			branchImm, ok := ins.Imm.(*IR.BranchImm)
+			if !ok {
+				vm.panic("opcode: br invalid imm")
+			}
+			td := branchImm.TargetDepth
 			tarInsIndex := endIndice[int(td)]
 			frame.advanceTo(tarInsIndex)
 		case IR.OPCbr_if:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
+			con, err := pop1(vm, frame)
+			if err != nil {
+				vm.panic(err)
 			}
-			con, _ := frame.Stack.Pop()
-			v := con.Value().(int32)
+
+			v, ok := con.Value().(int32)
+			if !ok {
+				vm.panic("opcode: br_if parameter invalid")
+			}
 			if v == 1 {
-				td := ins.Imm.(*IR.BranchImm).TargetDepth
+				branchImm, ok := ins.Imm.(*IR.BranchImm)
+				if !ok {
+					vm.panic("opcode: br_if invalid imm")
+				}
+				td := branchImm.TargetDepth
 				tarInsIndex := endIndice[int(td)]
 				frame.advanceTo(tarInsIndex)
 			} else {
@@ -121,7 +133,11 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			}
 		case IR.OPCcall:
 			frame.advance(1)
-			funcIndex := ins.Imm.(*IR.FunctionImm).FunctionIndex
+			funcImm, ok := ins.Imm.(*IR.FunctionImm)
+			if !ok {
+				vm.panic("opcode: call invalid imm")
+			}
+			funcIndex := funcImm.FunctionIndex
 			vm.CurrentFrame += 1
 			if vm.CurrentFrame >= MAXFRAME {
 				vm.panic(types.ErrBeyondMaxFrame)
@@ -166,14 +182,22 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			frame.advance(1)
 
 		case IR.OPCget_local:
-			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
+			if !ok {
+				vm.panic("opcode: get_local invalid imm")
+			}
+			index := imm.VariableIndex
 			if index >= uint64(len(frame.Locals)) {
 				vm.panic("get_local index out of range")
 			}
 			frame.Stack.Push(frame.Locals[index])
 			frame.advance(1)
 		case IR.OPCset_local:
-			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
+			if !ok {
+				vm.panic("opcode: set_local invalid imm")
+			}
+			index := imm.VariableIndex
 			if index >= uint64(len(frame.Locals)) {
 				vm.panic("set_local index out of range")
 			}
@@ -184,7 +208,11 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			frame.Locals[index] = a
 			frame.advance(1)
 		case IR.OPCtee_local:
-			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
+			if !ok {
+				vm.panic("opcode: tee_local invalid imm")
+			}
+			index := imm.VariableIndex
 			if index >= uint64(len(frame.Locals)) {
 				vm.panic("tee_local index out of range")
 			}
@@ -195,14 +223,22 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			frame.Locals[index] = a
 			frame.advance(1)
 		case IR.OPCget_global:
-			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
+			if !ok {
+				vm.panic("opcode: get_local invalid imm")
+			}
+			index := imm.VariableIndex
 			if index >= uint64(len(vm.Global)) {
 				vm.panic("get_local index out of range")
 			}
 			frame.Stack.Push(vm.Global[index])
 			frame.advance(1)
 		case IR.OPCset_global:
-			index := ins.Imm.(*IR.GetOrSetVariableImm).VariableIndex
+			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
+			if !ok {
+				vm.panic("opcode: get_local invalid imm")
+			}
+			index := imm.VariableIndex
 			if index >= uint64(len(vm.Global)) {
 				vm.panic("set_local index out of range")
 			}
@@ -267,13 +303,13 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCmemory_size:
 		case IR.OPCmemory_grow:
 		case IR.OPCi32_const:
-			defConst(vm, frame, I32_CONST)
+			err = defConst(vm, frame, I32_CONST)
 		case IR.OPCi64_const:
-			defConst(vm, frame, I64_CONST)
+			err = defConst(vm, frame, I64_CONST)
 		case IR.OPCf32_const:
-			defConst(vm, frame, F32_CONST)
+			err = defConst(vm, frame, F32_CONST)
 		case IR.OPCf64_const:
-			defConst(vm, frame, F64_CONST)
+			err = defConst(vm, frame, F64_CONST)
 		case IR.OPCi32_eqz:
 			err = eqz(vm, frame, I32_EQZ)
 		case IR.OPCi32_eq:
@@ -479,46 +515,67 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			err = f64copySign(vm, frame)
 
 		case IR.OPCi32_wrap_i64:
+			err = wrapI64ToI32(vm, frame)
+
 		case IR.OPCi32_trunc_s_f32:
+			err = i32Trunc(vm, frame, SF32TRUNC)
 		case IR.OPCi32_trunc_u_f32:
+			err = i32Trunc(vm, frame, UF32TRUNC)
 		case IR.OPCi32_trunc_s_f64:
+			err = i32Trunc(vm, frame, SF64TRUNC)
 		case IR.OPCi32_trunc_u_f64:
+			err = i32Trunc(vm, frame, UF64TRUNC)
+
 		case IR.OPCi64_extend_s_i32:
+			err = i64Extend(vm, frame, SI32Extend)
 		case IR.OPCi64_extend_u_i32:
+			err = i64Extend(vm, frame, UI32Extend)
+
 		case IR.OPCi64_trunc_s_f32:
+			err = i64Trunc(vm, frame, SF32TRUNC)
 		case IR.OPCi64_trunc_u_f32:
+			err = i64Trunc(vm, frame, UF32TRUNC)
 		case IR.OPCi64_trunc_s_f64:
+			err = i64Trunc(vm, frame, SF64TRUNC)
 		case IR.OPCi64_trunc_u_f64:
+			err = i64Trunc(vm, frame, UF64TRUNC)
+
 		case IR.OPCf32_convert_s_i32:
+			err = f32Convert(vm, frame, SI32Convert)
 		case IR.OPCf32_convert_u_i32:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			m, ok := a.Value().(uint32)
-			if !ok {
-				vm.panic(fmt.Sprintf(types.ErrTypeAssertion, "uint32"))
-			}
-			v := float32(m)
-			frame.Stack.Push(&Value{IR.TypeF32, v})
-			frame.advance(1)
+			err = f32Convert(vm, frame, UI32Convert)
 		case IR.OPCf32_convert_s_i64:
+			err = f32Convert(vm, frame, SI64Convert)
 		case IR.OPCf32_convert_u_i64:
+			err = f32Convert(vm, frame, UI64Convert)
 		case IR.OPCf32_demote_f64:
 		case IR.OPCf64_convert_s_i32:
+			err = f64Convert(vm, frame, SI32Convert)
 		case IR.OPCf64_convert_u_i32:
+			err = f64Convert(vm, frame, UI32Convert)
 		case IR.OPCf64_convert_s_i64:
+			err = f64Convert(vm, frame, SI64Convert)
 		case IR.OPCf64_convert_u_i64:
+			err = f64Convert(vm, frame, UI64Convert)
+
 		case IR.OPCf64_promote_f32:
+			err = promoteF32ToF64(vm, frame)
+
 		case IR.OPCi32_reinterpret_f32:
+			err = i32Reinterpret(vm, frame)
 		case IR.OPCi64_reinterpret_f64:
+			err = i64Reinterpret(vm, frame)
 		case IR.OPCf32_reinterpret_i32:
+			err = f32Reinterpret(vm, frame)
 		case IR.OPCf64_reinterpret_i64:
+			err = f64Reinterpret(vm, frame)
+
 		case IR.OPCi32_extend8_s:
 		case IR.OPCi32_extend16_s:
 		case IR.OPCi64_extend8_s:
 		case IR.OPCi64_extend16_s:
 		case IR.OPCi64_extend32_s:
+
 		case IR.OPCref_null:
 		case IR.OPCref_isnull:
 		case IR.OPCref_func:

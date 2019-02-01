@@ -6,14 +6,6 @@ import (
 	"wasm/utils"
 )
 
-//case IR.OPCf64_abs:
-//case IR.OPCf64_neg:
-//case IR.OPCf64_ceil:
-//case IR.OPCf64_floor:
-//case IR.OPCf64_trunc:
-//case IR.OPCf64_nearest:
-//case IR.OPCf64_sqrt:
-
 func f32Abs(vm *VM, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
@@ -263,6 +255,7 @@ func f32copySign(vm *VM, frame *Frame) (err error) {
 
 	ret := math.Copysign(float64(a.Value().(float32)), float64(b.Value().(float32)))
 	frame.Stack.Push(&Value{IR.TypeF32, float32(ret)})
+	frame.advance(1)
 
 	return
 }
@@ -284,6 +277,23 @@ func f64copySign(vm *VM, frame *Frame) (err error) {
 
 	ret := math.Copysign(float64(a.Value().(float64)), float64(b.Value().(float64)))
 	frame.Stack.Push(&Value{IR.TypeF64, float64(ret)})
+	frame.advance(1)
 
+	return
+}
+
+func promoteF32ToF64(vm *VM, frame *Frame) (err error) {
+	defer utils.CatchError(&err)
+	a, err := pop1(vm, frame)
+	if err != nil {
+		panic(err)
+	}
+	switch a.Value().(type) {
+	case float32:
+		frame.Stack.Push(&Value{IR.TypeF64, float64(a.Value().(float32))})
+	default:
+		panic("f64.promote/f32 parameter invalid")
+	}
+	frame.advance(1)
 	return
 }
