@@ -79,3 +79,60 @@ func (m *Module) GetAllFunc() string {
 	}
 	return ret
 }
+
+func (m *Module) GetAllSections() string {
+	ret := ""
+	//types
+	ret += "type section:\n"
+	for _, funcType := range m.Types {
+		ret += funcType.String() + "\n"
+	}
+
+	//functions
+	ret += "\nimport functions:\n"
+	for _, imFunc := range m.Functions.Imports {
+		ret += imFunc.String() + "\n"
+	}
+
+	ret += "defined functions:\n"
+	for _, defFunc := range m.Functions.Defs {
+		ret += defFunc.String() + "\n"
+	}
+
+	//tables
+	ret += "\nimport tables:\n"
+	for _, imTab := range m.Tables.Imports {
+		ret += imTab.String() + "\n"
+	}
+
+	ret += "defined tables:\n"
+	for _, defTab := range m.Tables.Defs {
+		ret += defTab.String() + "\n"
+	}
+
+	//memories
+	ret += "\nimport memories:\n"
+	for _, imMem := range m.Memories.Imports {
+		ret += imMem.String() + "\n"
+	}
+	ret += "defined memories:\n"
+	for _, defMem := range m.Memories.Defs {
+		ret += defMem.String() + "\n"
+	}
+
+	//globals
+	ret += "\nimport globals:\n"
+	for _, imGlobal := range m.Globals.Imports {
+		ret += imGlobal.String() + "\n"
+	}
+	for _, defGlobal := range m.Globals.Defs {
+		ret += defGlobal.String() + "\n"
+	}
+
+	//exports
+	ret += "\nexport section:\n"
+	for _, ex := range m.Exports {
+		ret += ex.String() + "\n"
+	}
+	return ret
+}

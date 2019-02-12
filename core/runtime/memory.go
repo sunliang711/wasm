@@ -8,6 +8,8 @@ import (
 	"wasm/utils"
 )
 
+//TODO check vm.Memory boundary
+
 func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Empty() {

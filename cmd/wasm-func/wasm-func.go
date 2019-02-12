@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 	"wasm/parser"
 )
@@ -16,7 +18,11 @@ func main() {
 	}
 	logrus.SetLevel(logrus.PanicLevel)
 	for _, wasmFile := range os.Args[1:] {
-		parser, err := parser.NewParser(wasmFile)
+		contents, err := ioutil.ReadFile(wasmFile)
+		if err != nil {
+			panic(err)
+		}
+		parser, err := parser.NewParser(bytes.NewReader(contents))
 		if err != nil {
 			panic(err)
 		}
