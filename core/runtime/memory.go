@@ -201,3 +201,42 @@ func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
 	frame.advance(1)
 	return
 }
+
+func memory_size(vm *VM, frame *Frame) (err error) {
+	defer utils.CatchError(&err)
+	pageSize := int32(len(vm.Memory) / PAGESIZE)
+	frame.Stack.Push(&Value{IR.TypeI32, pageSize})
+	frame.advance(1)
+	return
+}
+
+func memory_grow(vm *VM, frame *Frame) (err error) {
+	defer utils.CatchError(&err)
+	originalSize := int32(len(vm.Memory) / PAGESIZE)
+	if len(vm.Module.Memories.Defs) == 0 {
+		vm.panic("no memory")
+	}
+	if frame.Stack.Len() < 1 {
+		vm.panic(types.ErrStackSizeErr)
+	}
+	delta, _ := pop1(vm, frame)
+	var dta int
+	switch delta.Value().(type) {
+	case int32:
+		dta = int(delta.Value().(int32))
+	case int64:
+		dta = int(delta.Value().(int64))
+	case int:
+		dta = int(delta.Value().(int))
+	default:
+		vm.panic("memory.grow parameter type invalid")
+	}
+	if uint64(int(originalSize)+dta) > vm.Module.Memories.Defs[0].Type.Size.Max {
+		vm.panic("memory.grow delta exceed max constraint")
+	}
+	deltaBuf := make([]byte, dta*PAGESIZE)
+	vm.Memory = append(vm.Memory, deltaBuf...)
+	frame.Stack.Push(&Value{IR.TypeI32, originalSize})
+	frame.advance(1)
+	return
+}

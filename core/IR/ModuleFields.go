@@ -307,7 +307,7 @@ type ElemSegment struct {
 	IsActive   bool
 	TableIndex uint64
 	BaseOffset *InitializerExpression
-	Indices    []uint64
+	Indices    []uint32
 }
 
 func (e ElemSegment) String() string {

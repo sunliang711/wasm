@@ -16,15 +16,15 @@ func (p *Parser) elemSection(sec *Section) error {
 	}
 	rd := bytes.NewReader(sec.Data)
 
-	//1. num ele
-	var numEle uint32
-	_, err = utils.DecodeVarInt(rd, 32, &numEle)
+	//1. num eleSeg
+	var numEleSeg uint32
+	_, err = utils.DecodeVarInt(rd, 32, &numEleSeg)
 	if err != nil {
 		return err
 	}
 
-	//2. eles
-	for i := 0; i < int(numEle); i++ {
+	//2. eleSegs
+	for i := 0; i < int(numEleSeg); i++ {
 		eleSeg := IR.ElemSegment{}
 		flags, err := utils.ReadByte(rd)
 		if err != nil {
@@ -59,6 +59,22 @@ func (p *Parser) elemSection(sec *Section) error {
 		default:
 			return fmt.Errorf(types.ErrInvalidElemFlags)
 		}
+		//num ele
+		var numEle uint32
+		_, err = utils.DecodeVarInt(rd, 32, &numEle)
+		if err != nil {
+			return err
+		}
+		var funcIndex uint32
+		for j := 0; j < int(numEle); j++ {
+
+			_, err := utils.DecodeVarInt(rd, 32, &funcIndex)
+			if err != nil {
+				return err
+			}
+			eleSeg.Indices = append(eleSeg.Indices, funcIndex)
+		}
+		//eles
 		p.Module.ElemSegments = append(p.Module.ElemSegments, eleSeg)
 		logrus.Infof("<elem section> element segment: %v", eleSeg)
 	}

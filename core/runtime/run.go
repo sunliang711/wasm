@@ -161,6 +161,47 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			}
 
 		case IR.OPCcall_indirect:
+			//TODO: check imm
+			//imm, ok := ins.Imm.(*IR.CallIndirectImm)
+			//if !ok {
+			//	vm.panic("opcode: call_indirect invalid imm")
+			//}
+			frame.advance(1)
+			calleeIndex, err := pop1(vm, frame)
+			if err != nil {
+				vm.panic(err)
+			}
+			funcIndex, ok := calleeIndex.Value().(int)
+			if !ok {
+				vm.panic("call_indirect: funcIndex not int type")
+			}
+			vm.CurrentFrame += 1
+			if vm.CurrentFrame >= MAXFRAME {
+				vm.panic(types.ErrBeyondMaxFrame)
+			}
+
+			fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
+			paraCount := fType.Params.NumElems
+			if frame.Stack.Len() < int(paraCount) {
+				vm.panic(types.ErrStackSizeErr)
+			}
+			params := make([]IR.InterfaceValue, paraCount)
+			for elemIndex := range fType.Params.Elems {
+				v, _ := frame.Stack.Pop()
+				params[int(paraCount)-1-elemIndex] = v
+			}
+
+			frame = vm.GetCurrentFrame()
+			err = frame.Init(int(funcIndex), vm, params)
+			if err != nil {
+				vm.panic(err)
+			}
+			//get types[imm.Type]
+
+			//get table Index
+
+			//call func specified by table index
+
 		case IR.OPCdrop:
 			if frame.Stack.Len() < 1 {
 				vm.panic(types.ErrStackSizeErr)
@@ -301,7 +342,9 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCi64_store32:
 			err = i64_store(vm, frame, ins.Imm.(*IR.LoadOrStoreImm).Offset, 4)
 		case IR.OPCmemory_size:
+			err = memory_size(vm, frame)
 		case IR.OPCmemory_grow:
+			err = memory_grow(vm, frame)
 		case IR.OPCi32_const:
 			err = defConst(vm, frame, I32_CONST)
 		case IR.OPCi64_const:

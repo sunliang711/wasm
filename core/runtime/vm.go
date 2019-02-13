@@ -76,7 +76,8 @@ func NewVM(module *IR.Module) (*VM, error) {
 			vm.Global[i] = &Value{valType, def.Initializer.F64}
 		case IR.Get_global:
 			vm.Global[i] = &Value{valType, vm.Global[def.Initializer.GlobalRef]}
-			//TODO :other type
+		default:
+			return nil, fmt.Errorf("init global error(init expr type invalid)")
 		}
 	}
 
@@ -100,11 +101,34 @@ func NewVM(module *IR.Module) (*VM, error) {
 				offset = int(dataSeg.BaseOffset.F64)
 			case IR.Get_global:
 				offset = vm.Global[int(dataSeg.BaseOffset.GlobalRef)].Value().(int)
+			default:
+				return nil, fmt.Errorf("init memory error(init expr type invalid)")
 			}
 			copy(vm.Memory[offset:], dataSeg.Data)
 		}
 	}
-	//4. init table TODO
+	//4. init table
+	if len(module.Tables.Defs) > 0 {
+		vm.Table = make([]uint32, module.Tables.Defs[0].Type.Size.Min)
+		offset := 0
+		for _, eleSeg := range module.ElemSegments {
+			switch eleSeg.BaseOffset.Type {
+			case IR.I32_const:
+				offset = int(eleSeg.BaseOffset.I32)
+			case IR.I64_const:
+				offset = int(eleSeg.BaseOffset.I64)
+			case IR.F32_const:
+				offset = int(eleSeg.BaseOffset.F32)
+			case IR.F64_const:
+				offset = int(eleSeg.BaseOffset.F64)
+			case IR.Get_global:
+				offset = vm.Global[int(eleSeg.BaseOffset.GlobalRef)].Value().(int)
+			default:
+				return nil, fmt.Errorf("init table error(init expr type invalid)")
+			}
+			copy(vm.Table[offset:], eleSeg.Indices)
+		}
+	}
 
 	//5. init frames
 	vm.Frames = make([]*Frame, MAXFRAME)
