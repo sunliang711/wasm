@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"wasm/parser"
 )
 
 func main() {
 	flag.Parse()
+	logrus.SetLevel(logrus.PanicLevel)
 	for _, wasmFile := range flag.Args() {
 		contents, err := ioutil.ReadFile(wasmFile)
 		if err != nil {

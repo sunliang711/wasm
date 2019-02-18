@@ -4,7 +4,7 @@ package parser
 import(
 	"bytes"
 	"io"
-	"wasm/types/IR"
+	"wasm/core/IR"
 	"fmt"
 )
 

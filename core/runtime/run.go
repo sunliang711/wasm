@@ -8,14 +8,16 @@ import (
 	"wasm/utils"
 )
 
-func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err error) {
+func (vm *VM) Run(functionNameOrID interface{}, totalGas uint64, params ...interface{}) (usedGas uint64, err error) {
 	//TODO check all type assertion
 	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()
 	if frame == nil {
 		panic("Frame stack overflow.")
 	}
-	funcIndex := 0
+	var (
+		funcIndex int
+	)
 	switch functionNameOrID.(type) {
 	case string:
 		funcIndex, err = vm.Module.GetFuncIndexWithName(functionNameOrID.(string))
@@ -77,6 +79,11 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		lastPC := frame.PC
 		ins := frame.Instruction[frame.PC]
 
+		usedGas += uint64(IR.Ops[ins.Op.Code].Gas)
+		if usedGas > totalGas {
+			vm.panic(fmt.Sprintf("Gas insufficient,used gas: %d", usedGas))
+		}
+
 		switch ins.Op.Code {
 		case IR.OPCunreachable:
 			vm.panic("unreachable executed")
@@ -124,7 +131,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 				if hasResult {
 					vm.ReturnValue = retV
 				}
-				return nil
+				return
 			} else {
 				if hasResult {
 					frame.Stack.Push(retV)
@@ -289,10 +296,10 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 			a, _ := frame.Stack.Pop()
 			vm.Global[index] = a
 			frame.advance(1)
-		case IR.OPCtable_get:
-		case IR.OPCtable_set:
-		case IR.OPCthrow_:
-		case IR.OPCrethrow:
+			//case IR.OPCtable_get:
+			//case IR.OPCtable_set:
+			//case IR.OPCthrow_:
+			//case IR.OPCrethrow:
 		case IR.OPCnop:
 			frame.advance(1)
 		case IR.OPCi32_load:
@@ -613,15 +620,15 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 		case IR.OPCf64_reinterpret_i64:
 			err = f64Reinterpret(vm, frame)
 
-		case IR.OPCi32_extend8_s:
-		case IR.OPCi32_extend16_s:
-		case IR.OPCi64_extend8_s:
-		case IR.OPCi64_extend16_s:
-		case IR.OPCi64_extend32_s:
-
-		case IR.OPCref_null:
-		case IR.OPCref_isnull:
-		case IR.OPCref_func:
+			//case IR.OPCi32_extend8_s:
+			//case IR.OPCi32_extend16_s:
+			//case IR.OPCi64_extend8_s:
+			//case IR.OPCi64_extend16_s:
+			//case IR.OPCi64_extend32_s:
+			//
+			//case IR.OPCref_null:
+			//case IR.OPCref_isnull:
+			//case IR.OPCref_func:
 
 		case IR.OPCblock:
 			frame.advance(1)
@@ -669,7 +676,7 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 					if hasResult {
 						vm.ReturnValue = retV
 					}
-					return nil
+					return
 				} else {
 					frame = vm.GetCurrentFrame()
 					if hasResult {
@@ -695,9 +702,9 @@ func (vm *VM) Run(functionNameOrID interface{}, params ...interface{}) (err erro
 				}
 			}
 
-		case IR.OPCtry_:
-		case IR.OPCcatch_:
-		case IR.OPCcatch_all:
+			//case IR.OPCtry_:
+			//case IR.OPCcatch_:
+			//case IR.OPCcatch_all:
 		default:
 			frame.runBinaryOp(vm, &ins)
 		}

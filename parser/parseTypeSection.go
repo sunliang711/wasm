@@ -17,8 +17,7 @@ var (
 func (p *Parser) typeSection(sec *Section) error {
 	defer func() {
 		//notify import and functionDeclaration sections
-		p.typeParsed <- struct{}{}
-		p.typeParsed <- struct{}{}
+		p.typeParsed = true
 	}()
 
 	err := checkSection(sec, IR.OrderType)

@@ -60,7 +60,8 @@ func (p *Parser) importSection(sec *Section) error {
 				return err
 			}
 			//after type section parsed
-			<-p.typeParsed
+			waitCondition(&p.typeParsed, "wait for type section parsed timeout", 500)
+
 			if int(funcTypeIndex) >= len(p.Module.Types) {
 				return fmt.Errorf(types.ErrFunctionTypeIndexOutOfRange)
 			}

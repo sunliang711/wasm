@@ -22,7 +22,8 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 		return err
 	}
 
-	<-p.typeParsed
+	waitCondition(&p.typeParsed, "wait for type section parsed timeout", 500)
+
 	var funcTypeIndex uint32
 	//2. function type index
 	for i := 0; i < int(numFun); i++ {
@@ -40,7 +41,7 @@ func (p *Parser) functionDeclarationsSection(sec *Section) error {
 		p.Module.Functions.Defs = append(p.Module.Functions.Defs, funcDef)
 		logrus.Infof("<function Declaration section> function def: %v", funcDef)
 	}
-	p.funcDeclarationParsed <- struct{}{}
+	p.funcDeclarationParsed = true
 
 	err = p.validateFunctionDeclarations()
 	return err

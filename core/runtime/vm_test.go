@@ -15,28 +15,28 @@ func TestVM(t *testing.T) {
 	//test(t,inputfile,"_Z3Sumi",int32(2))
 
 	inputfile = "/Users/eagle/Downloads/77.wasm"
-	test(t, inputfile, "_Z3maxii", int32(2), int32(3))
+	test(t, inputfile, 1000, "_Z3maxii", int32(2), int32(3))
 
 }
 
 func TestA(t *testing.T) {
-	test(t, "../../example/br_if_memory.wasm", "_Z2ffi", int32(3))
+	test(t, "../../example/br_if_memory.wasm", 100, "_Z2ffi", int32(3))
 }
 
 func TestMax(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/sum_max.wasm", "_Z3maxii", int32(30), int32(5))
+	test(t, "../../example/sum_max.wasm", 100, "_Z3maxii", int32(30), int32(5))
 }
 
 func TestArea(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/area.wasm", "_Z4aread", float64(10))
+	test(t, "../../example/area.wasm", 10, "_Z4aread", float64(10))
 }
 func TestSum(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/sum_max.wasm", "_Z3sumi", int32(30))
+	test(t, "../../example/sum_max.wasm", 900, "_Z3sumi", int32(30))
 }
-func test(t *testing.T, filename string, funcName string, params ...interface{}) {
+func test(t *testing.T, filename string, gas uint64, funcName string, params ...interface{}) {
 	bs, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatal(err)
@@ -55,12 +55,13 @@ func test(t *testing.T, filename string, funcName string, params ...interface{})
 		t.Fatal(err)
 	}
 
-	err = vm.Run(funcName, params...)
+	usedGas, err := vm.Run(funcName, gas, params...)
 	if err != nil {
 		t.Fatal(err)
 	} else {
+		t.Log("used gas: ", usedGas)
 		if vm.ReturnValue != nil {
-			t.Log(vm.ReturnValue.Value())
+			t.Log("return value:", vm.ReturnValue.Value())
 		} else {
 			t.Log("No return value.")
 		}
@@ -89,31 +90,38 @@ func TestPrintAllIns(t *testing.T) {
 
 func TestLoadStoreI32(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i32LoadStore.wasm", "_Z1fv")
+	test(t, "../../example/i32LoadStore.wasm", 100, "_Z1fv")
 }
 
 func TestLoadStoreI64(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i64LoadStore.wasm", "_Z1fv")
+	test(t, "../../example/i64LoadStore.wasm", 100, "_Z1fv")
 }
 
 func TestI32Load8_s(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i32Load8_s.wasm", "_Z1fv")
+	test(t, "../../example/i32Load8_s.wasm", 100, "_Z1fv")
 }
 
 func TestLoadStoreF32(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/f32LoadStore.wasm", "_Z1fv")
+	test(t, "../../example/f32LoadStore.wasm", 100, "_Z1fv")
 }
 
 func TestLoadStoreF64(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/f64LoadStore.wasm", "_Z1fv")
+	test(t, "../../example/f64LoadStore.wasm", 100, "_Z1fv")
 }
 
 func TestWrap64To32(t *testing.T) {
 	var i64 int64 = 0x1234567811223344
 	var i32 int32 = int32(i64)
 	t.Logf("%#x", i32)
+}
+
+func TestAddGet(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	test(t, "../../example/add-get.wasm", 100, "_Z3getv")
+	test(t, "../../example/add-get.wasm", 100, "_Z3addi", int32(2))
+	test(t, "../../example/add-get.wasm", 100, "_Z3getv")
 }

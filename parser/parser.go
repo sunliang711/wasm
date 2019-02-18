@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"sync"
+	"time"
 	"wasm/core/IR"
 	"wasm/types"
 	"wasm/utils"
@@ -27,8 +28,8 @@ type Parser struct {
 
 	*IR.DeferredCodeValidationState
 
-	typeParsed            chan struct{}
-	funcDeclarationParsed chan struct{}
+	typeParsed            bool
+	funcDeclarationParsed bool
 }
 
 type Section struct {
@@ -51,8 +52,8 @@ func NewParser(stream io.Reader) (*Parser, error) {
 		Wg:                          new(sync.WaitGroup),
 		Module:                      IR.NewModule(),
 		Closed:                      false,
-		typeParsed:                  make(chan struct{}, 2),
-		funcDeclarationParsed:       make(chan struct{}, 1),
+		typeParsed:                  false,
+		funcDeclarationParsed:       false,
 		DeferredCodeValidationState: new(IR.DeferredCodeValidationState),
 	}, nil
 }
@@ -335,4 +336,16 @@ func (p *Parser) Post() {
 			p.Module.Functions.Defs[e.Index-importFunLen].Name = e.Name
 		}
 	}
+}
+
+func waitCondition(condition *bool, timeoutMsg string, timeout int) error {
+	sleepCount := 0
+	for !*condition {
+		time.Sleep(time.Millisecond * 100)
+		sleepCount += 1
+		if sleepCount == timeout/100 {
+			return fmt.Errorf(timeoutMsg)
+		}
+	}
+	return nil
 }

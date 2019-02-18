@@ -125,6 +125,8 @@ func (m *Module) GetAllSections() string {
 	for _, imGlobal := range m.Globals.Imports {
 		ret += imGlobal.String() + "\n"
 	}
+
+	ret += "\ndefined globals:\n"
 	for _, defGlobal := range m.Globals.Defs {
 		ret += defGlobal.String() + "\n"
 	}

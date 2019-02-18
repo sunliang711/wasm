@@ -16,7 +16,8 @@ func (p *Parser) functionDefinitionsSection(sec *Section) error {
 	}
 	rd := bytes.NewReader(sec.Data)
 
-	<-p.funcDeclarationParsed
+	waitCondition(&p.funcDeclarationParsed, "wait for type section parsed timeout", 500)
+
 	//1. num function bodys
 	var numFunc uint32
 	_, err = utils.DecodeVarInt(rd, 32, &numFunc)
