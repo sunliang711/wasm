@@ -8,7 +8,7 @@ import (
 	"wasm/utils"
 )
 
-func (vm *VM) Run(functionNameOrID interface{}, totalGas uint64, params ...interface{}) (usedGas uint64, err error) {
+func (vm *VM) Run(functionNameOrID interface{}, predefine bool, totalGas uint64, params ...interface{}) (usedGas uint64, err error) {
 	//TODO check all type assertion
 	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()
@@ -145,26 +145,34 @@ func (vm *VM) Run(functionNameOrID interface{}, totalGas uint64, params ...inter
 				vm.panic("opcode: call invalid imm")
 			}
 			funcIndex := funcImm.FunctionIndex
-			vm.CurrentFrame += 1
-			if vm.CurrentFrame >= MAXFRAME {
-				vm.panic(types.ErrBeyondMaxFrame)
+			var predefineLen uint64
+			if predefine {
+				predefineLen = uint64(len(PredefinedFuncs))
 			}
+			if funcIndex < predefineLen {
+				PredefinedFuncs[funcIndex].Action(vm, frame)
+			} else {
+				vm.CurrentFrame += 1
+				if vm.CurrentFrame >= MAXFRAME {
+					vm.panic(types.ErrBeyondMaxFrame)
+				}
 
-			fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
-			paraCount := fType.Params.NumElems
-			if frame.Stack.Len() < int(paraCount) {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			params := make([]IR.InterfaceValue, paraCount)
-			for elemIndex := range fType.Params.Elems {
-				v, _ := frame.Stack.Pop()
-				params[int(paraCount)-1-elemIndex] = v
-			}
+				fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
+				paraCount := fType.Params.NumElems
+				if frame.Stack.Len() < int(paraCount) {
+					vm.panic(types.ErrStackSizeErr)
+				}
+				params := make([]IR.InterfaceValue, paraCount)
+				for elemIndex := range fType.Params.Elems {
+					v, _ := frame.Stack.Pop()
+					params[int(paraCount)-1-elemIndex] = v
+				}
 
-			frame = vm.GetCurrentFrame()
-			err = frame.Init(int(funcIndex), vm, params)
-			if err != nil {
-				vm.panic(err)
+				frame = vm.GetCurrentFrame()
+				err = frame.Init(int(funcIndex), vm, params)
+				if err != nil {
+					vm.panic(err)
+				}
 			}
 
 		case IR.OPCcall_indirect:

@@ -15,28 +15,28 @@ func TestVM(t *testing.T) {
 	//test(t,inputfile,"_Z3Sumi",int32(2))
 
 	inputfile = "/Users/eagle/Downloads/77.wasm"
-	test(t, inputfile, 1000, "_Z3maxii", int32(2), int32(3))
+	test(t, inputfile, 1000, "_Z3maxii", false, int32(2), int32(3))
 
 }
 
 func TestA(t *testing.T) {
-	test(t, "../../example/br_if_memory.wasm", 100, "_Z2ffi", int32(3))
+	test(t, "../../example/br_if_memory.wasm", 100, "_Z2ffi", false, int32(3))
 }
 
 func TestMax(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/sum_max.wasm", 100, "_Z3maxii", int32(30), int32(5))
+	test(t, "../../example/sum_max.wasm", 100, "_Z3maxii", false, int32(30), int32(5))
 }
 
 func TestArea(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/area.wasm", 10, "_Z4aread", float64(10))
+	test(t, "../../example/area.wasm", 100, "_Z4aread", false, float64(10))
 }
 func TestSum(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/sum_max.wasm", 900, "_Z3sumi", int32(30))
+	test(t, "../../example/sum_max.wasm", 900, "_Z3sumi", false, int32(30))
 }
-func test(t *testing.T, filename string, gas uint64, funcName string, params ...interface{}) {
+func test(t *testing.T, filename string, gas uint64, funcName string, predefine bool, params ...interface{}) {
 	bs, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatal(err)
@@ -55,7 +55,7 @@ func test(t *testing.T, filename string, gas uint64, funcName string, params ...
 		t.Fatal(err)
 	}
 
-	usedGas, err := vm.Run(funcName, gas, params...)
+	usedGas, err := vm.Run(funcName, predefine, gas, params...)
 	if err != nil {
 		t.Fatal(err)
 	} else {
@@ -90,27 +90,27 @@ func TestPrintAllIns(t *testing.T) {
 
 func TestLoadStoreI32(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i32LoadStore.wasm", 100, "_Z1fv")
+	test(t, "../../example/i32LoadStore.wasm", 100, "_Z1fv", false)
 }
 
 func TestLoadStoreI64(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i64LoadStore.wasm", 100, "_Z1fv")
+	test(t, "../../example/i64LoadStore.wasm", 100, "_Z1fv", false)
 }
 
 func TestI32Load8_s(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/i32Load8_s.wasm", 100, "_Z1fv")
+	test(t, "../../example/i32Load8_s.wasm", 100, "_Z1fv", false)
 }
 
 func TestLoadStoreF32(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/f32LoadStore.wasm", 100, "_Z1fv")
+	test(t, "../../example/f32LoadStore.wasm", 100, "_Z1fv", false)
 }
 
 func TestLoadStoreF64(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/f64LoadStore.wasm", 100, "_Z1fv")
+	test(t, "../../example/f64LoadStore.wasm", 100, "_Z1fv", false)
 }
 
 func TestWrap64To32(t *testing.T) {
@@ -121,7 +121,11 @@ func TestWrap64To32(t *testing.T) {
 
 func TestAddGet(t *testing.T) {
 	logrus.SetLevel(logrus.ErrorLevel)
-	test(t, "../../example/add-get.wasm", 100, "_Z3getv")
-	test(t, "../../example/add-get.wasm", 100, "_Z3addi", int32(2))
-	test(t, "../../example/add-get.wasm", 100, "_Z3getv")
+	test(t, "../../example/add-get.wasm", 100, "_Z3getv", false)
+	test(t, "../../example/add-get.wasm", 100, "_Z3addi", false, int32(2))
+	test(t, "../../example/add-get.wasm", 100, "_Z3getv", false)
 }
+
+//emcc environment
+//docker run --rm -v $(pwd):/src -ti apiaryio/emcc
+//emcc SOURCE.c -o DEST.wasm -s WASM=1 -s ONLY_MY_CODE=1 -s SIDE_MODULE=1 -Oz
