@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"wasm/core/IR"
-	"wasm/types"
 	"wasm/utils"
 )
 
@@ -88,222 +87,37 @@ func (vm *VM) Run(functionNameOrID interface{}, predefine bool, totalGas uint64,
 		case IR.OPCunreachable:
 			vm.panic("unreachable executed")
 		case IR.OPCbr:
-			branchImm, ok := ins.Imm.(*IR.BranchImm)
-			if !ok {
-				vm.panic("opcode: br invalid imm")
-			}
-			td := branchImm.TargetDepth
-			tarInsIndex := endIndice[int(td)]
-			frame.advanceTo(tarInsIndex)
+			err = br(vm, frame, endIndice)
 		case IR.OPCbr_if:
-			con, err := pop1(vm, frame)
-			if err != nil {
-				vm.panic(err)
-			}
-
-			v, ok := con.Value().(int32)
-			if !ok {
-				vm.panic("opcode: br_if parameter invalid")
-			}
-			if v == 1 {
-				branchImm, ok := ins.Imm.(*IR.BranchImm)
-				if !ok {
-					vm.panic("opcode: br_if invalid imm")
-				}
-				td := branchImm.TargetDepth
-				tarInsIndex := endIndice[int(td)]
-				frame.advanceTo(tarInsIndex)
-			} else {
-				frame.advance(1)
-			}
-
+			err = br_if(vm, frame, endIndice)
 		case IR.OPCbr_table:
+			err = br_table(vm, frame, endIndice)
 		case IR.OPCreturn_:
-			var retV IR.InterfaceValue
-			vm.CurrentFrame -= 1
-			hasResult := !frame.Stack.Empty()
-			if hasResult {
-				//has return value
-				retV, _ = frame.Stack.Pop()
-				//TODO check frame.FunctionSig with retV
-			}
-			if vm.CurrentFrame == -1 {
-				if hasResult {
-					vm.ReturnValue = retV
-				}
+			var exit bool
+			exit, err = returnFunc(vm, &frame)
+			if exit {
 				return
-			} else {
-				if hasResult {
-					frame.Stack.Push(retV)
-				}
-				frame = vm.GetCurrentFrame()
 			}
 		case IR.OPCcall:
-			frame.advance(1)
-			funcImm, ok := ins.Imm.(*IR.FunctionImm)
-			if !ok {
-				vm.panic("opcode: call invalid imm")
-			}
-			funcIndex := funcImm.FunctionIndex
-			var predefineLen uint64
-			if predefine {
-				predefineLen = uint64(len(PredefinedFuncs))
-			}
-			if funcIndex < predefineLen {
-				PredefinedFuncs[funcIndex].Action(vm, frame)
-			} else {
-				vm.CurrentFrame += 1
-				if vm.CurrentFrame >= MAXFRAME {
-					vm.panic(types.ErrBeyondMaxFrame)
-				}
-
-				fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
-				paraCount := fType.Params.NumElems
-				if frame.Stack.Len() < int(paraCount) {
-					vm.panic(types.ErrStackSizeErr)
-				}
-				params := make([]IR.InterfaceValue, paraCount)
-				for elemIndex := range fType.Params.Elems {
-					v, _ := frame.Stack.Pop()
-					params[int(paraCount)-1-elemIndex] = v
-				}
-
-				frame = vm.GetCurrentFrame()
-				err = frame.Init(int(funcIndex), vm, params)
-				if err != nil {
-					vm.panic(err)
-				}
-			}
-
+			err = call(vm, &frame, predefine)
 		case IR.OPCcall_indirect:
-			//TODO: check imm
-			//imm, ok := ins.Imm.(*IR.CallIndirectImm)
-			//if !ok {
-			//	vm.panic("opcode: call_indirect invalid imm")
-			//}
-			frame.advance(1)
-			calleeIndex, err := pop1(vm, frame)
-			if err != nil {
-				vm.panic(err)
-			}
-			funcIndex, ok := calleeIndex.Value().(int)
-			if !ok {
-				vm.panic("call_indirect: funcIndex not int type")
-			}
-			vm.CurrentFrame += 1
-			if vm.CurrentFrame >= MAXFRAME {
-				vm.panic(types.ErrBeyondMaxFrame)
-			}
-
-			fType := vm.Module.Types[int(vm.FunctionCodes[funcIndex].Type.Index)]
-			paraCount := fType.Params.NumElems
-			if frame.Stack.Len() < int(paraCount) {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			params := make([]IR.InterfaceValue, paraCount)
-			for elemIndex := range fType.Params.Elems {
-				v, _ := frame.Stack.Pop()
-				params[int(paraCount)-1-elemIndex] = v
-			}
-
-			frame = vm.GetCurrentFrame()
-			err = frame.Init(int(funcIndex), vm, params)
-			if err != nil {
-				vm.panic(err)
-			}
-			//get types[imm.Type]
-
-			//get table Index
-
-			//call func specified by table index
-
+			err = call_indirect(vm, &frame)
 		case IR.OPCdrop:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			frame.Stack.Pop()
-			frame.advance(1)
+			err = drop(vm, frame)
 		case IR.OPCselect:
-			if frame.Stack.Len() < 3 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			b, _ := frame.Stack.Pop()
-			c, _ := frame.Stack.Pop()
-			if IsZero(c) {
-				frame.Stack.Push(b)
-			} else {
-				frame.Stack.Push(a)
-			}
-			frame.advance(1)
+			err = selectFunc(vm, frame)
 
 		case IR.OPCget_local:
-			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
-			if !ok {
-				vm.panic("opcode: get_local invalid imm")
-			}
-			index := imm.VariableIndex
-			if index >= uint64(len(frame.Locals)) {
-				vm.panic("get_local index out of range")
-			}
-			frame.Stack.Push(frame.Locals[index])
-			frame.advance(1)
+			err = getLocal(vm, frame)
 		case IR.OPCset_local:
-			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
-			if !ok {
-				vm.panic("opcode: set_local invalid imm")
-			}
-			index := imm.VariableIndex
-			if index >= uint64(len(frame.Locals)) {
-				vm.panic("set_local index out of range")
-			}
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			frame.Locals[index] = a
-			frame.advance(1)
+			err = setLocal(vm, frame)
 		case IR.OPCtee_local:
-			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
-			if !ok {
-				vm.panic("opcode: tee_local invalid imm")
-			}
-			index := imm.VariableIndex
-			if index >= uint64(len(frame.Locals)) {
-				vm.panic("tee_local index out of range")
-			}
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Top()
-			frame.Locals[index] = a
-			frame.advance(1)
+			err = teeLocal(vm, frame)
 		case IR.OPCget_global:
-			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
-			if !ok {
-				vm.panic("opcode: get_local invalid imm")
-			}
-			index := imm.VariableIndex
-			if index >= uint64(len(vm.Global)) {
-				vm.panic("get_local index out of range")
-			}
-			frame.Stack.Push(vm.Global[index])
-			frame.advance(1)
+			err = getGlobal(vm, frame)
 		case IR.OPCset_global:
-			imm, ok := ins.Imm.(*IR.GetOrSetVariableImm)
-			if !ok {
-				vm.panic("opcode: get_local invalid imm")
-			}
-			index := imm.VariableIndex
-			if index >= uint64(len(vm.Global)) {
-				vm.panic("set_local index out of range")
-			}
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			a, _ := frame.Stack.Pop()
-			vm.Global[index] = a
-			frame.advance(1)
+			err = setGlobal(vm, frame)
+
 			//case IR.OPCtable_get:
 			//case IR.OPCtable_set:
 			//case IR.OPCthrow_:
@@ -643,71 +457,14 @@ func (vm *VM) Run(functionNameOrID interface{}, predefine bool, totalGas uint64,
 		case IR.OPCloop:
 			frame.advance(1)
 		case IR.OPCif_:
-			if frame.Stack.Len() < 1 {
-				vm.panic(types.ErrStackSizeErr)
-			}
-			con, _ := frame.Stack.Pop()
-			if !IsZero(con) {
-				ifStack.Push(ins.Index)
-				frame.advance(1)
-			} else {
-				//advanctTo else or end
-				nextIndex := ins.MatchedIndex
-				if nextIndex == -1 {
-					vm.panic("if without else or end")
-				}
-				frame.advanceTo(nextIndex)
-			}
+			err = ifFunc(vm, frame, &ifStack)
 		case IR.OPCelse_:
-			if ifStack.Empty() {
-				frame.advance(1)
-			} else {
-				frame.advanceTo(ins.MatchedIndex)
-			}
-
+			err = elseFunc(vm, frame, &ifStack)
 		case IR.OPCend:
-			switch ins.MatchedIndex {
-			case types.LastOpcode:
-				//if ins.Index == len(frame.Instruction)-1 {
-				var retV IR.InterfaceValue
-				vm.CurrentFrame -= 1
-				hasResult := !frame.Stack.Empty()
-				if frame.FunctionDef.FunctionType.Results.NumElems > 0 && !hasResult {
-					panic("This function should have return value,but stack is empty")
-				}
-				if hasResult {
-					//has return value
-					retV, _ = frame.Stack.Pop()
-					//TODO check frame.FunctionSig with retV
-				}
-				if vm.CurrentFrame == -1 {
-					if hasResult {
-						vm.ReturnValue = retV
-					}
-					return
-				} else {
-					frame = vm.GetCurrentFrame()
-					if hasResult {
-						//TODO assert frame.Stack is empty
-						frame.Stack.Push(retV)
-					}
-				}
-			case -1:
-				vm.panic("end ins matched index illegal")
-			default:
-				//TODO pop value stack since block or if
-				mindex := ins.MatchedIndex
-				switch frame.Instruction[mindex].Op.Code {
-				case IR.OPCblock:
-					frame.advance(1)
-				case IR.OPCif_:
-					ifStack.Pop()
-					frame.advance(1)
-				case IR.OPCloop:
-					frame.advanceTo(mindex + 1)
-				default:
-					vm.panic("end ins not point to block/if/loop")
-				}
+			var exit bool
+			exit, err = end(vm, &frame, &ifStack)
+			if exit {
+				return
 			}
 
 			//case IR.OPCtry_:

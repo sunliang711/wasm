@@ -1,9 +1,8 @@
 package IR
 
 type Instruction struct {
-	Op  *Op
-	Imm Imm
-	//TODO:need Index?
+	Op    *Op
+	Imm   Imm
 	Index int
 	//for opcode 'end'
 	MatchedIndex int
