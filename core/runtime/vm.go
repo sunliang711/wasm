@@ -35,7 +35,7 @@ var (
 	modules = make(map[string]*IR.Module)
 )
 
-type VM struct {
+type WasmInterpreter struct {
 	Module       *IR.Module //decodeOpcodeAndImm to []FunctionCode //TODO TODO
 	Frames       []*Frame
 	CurrentFrame int
@@ -47,8 +47,8 @@ type VM struct {
 	Memory        []byte //pagesize * inital
 }
 
-func NewVM(module *IR.Module) (*VM, error) {
-	vm := &VM{Module: module, CurrentFrame: 0}
+func NewWasmInterpreter(module *IR.Module) (*WasmInterpreter, error) {
+	vm := &WasmInterpreter{Module: module, CurrentFrame: 0}
 	//TODO resolve import
 
 	//1. init functionCodes
@@ -141,14 +141,14 @@ func NewVM(module *IR.Module) (*VM, error) {
 	return vm, nil
 }
 
-func (vm *VM) GetCurrentFrame() *Frame {
+func (vm *WasmInterpreter) GetCurrentFrame() *Frame {
 	if vm.CurrentFrame >= MAXFRAME {
 		return nil
 	}
 	return vm.Frames[vm.CurrentFrame]
 }
 
-func (vm *VM) Traceback() {
+func (vm *WasmInterpreter) Traceback() {
 	ret := ""
 	for i := vm.CurrentFrame; i >= 0; i-- {
 		ret += "func " + vm.Frames[i].Name + " "
@@ -158,7 +158,14 @@ func (vm *VM) Traceback() {
 	fmt.Printf(ret)
 }
 
-func (vm *VM) panic(v interface{}) {
+func (vm *WasmInterpreter) panic(v interface{}) {
 	vm.Traceback()
 	panic(v)
+}
+
+func (in *WasmInterpreter) CanRun([]byte) bool {
+	return true
+}
+
+func (in *WasmInterpreter) SetCaller() {
 }

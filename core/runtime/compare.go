@@ -15,7 +15,7 @@ const (
 	CMP_GE
 )
 
-func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) {
+func i32_compare(vm *WasmInterpreter, frame *Frame, cmpType byte, isSigned bool) (err error) {
 	defer utils.CatchError(&err)
 	b, a, err := pop2(vm, frame)
 	if err != nil {
@@ -112,7 +112,7 @@ func i32_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) 
 	return
 }
 
-func i64_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) {
+func i64_compare(vm *WasmInterpreter, frame *Frame, cmpType byte, isSigned bool) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -210,7 +210,7 @@ func i64_compare(vm *VM, frame *Frame, cmpType byte, isSigned bool) (err error) 
 	return
 }
 
-func f32_compare(vm *VM, frame *Frame, cmpType byte) (err error) {
+func f32_compare(vm *WasmInterpreter, frame *Frame, cmpType byte) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -265,7 +265,7 @@ func f32_compare(vm *VM, frame *Frame, cmpType byte) (err error) {
 	return
 }
 
-func f64_compare(vm *VM, frame *Frame, cmpType byte) (err error) {
+func f64_compare(vm *WasmInterpreter, frame *Frame, cmpType byte) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)

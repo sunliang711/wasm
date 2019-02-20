@@ -10,7 +10,7 @@ const (
 	I64_CLZ byte = iota
 )
 
-func clz(vm *VM, frame *Frame, clzType byte) (err error) {
+func clz(vm *WasmInterpreter, frame *Frame, clzType byte) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

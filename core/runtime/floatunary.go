@@ -6,7 +6,7 @@ import (
 	"wasm/utils"
 )
 
-func f32Abs(vm *VM, frame *Frame) (err error) {
+func f32Abs(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -26,7 +26,7 @@ func f32Abs(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Abs(vm *VM, frame *Frame) (err error) {
+func f64Abs(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -46,7 +46,7 @@ func f64Abs(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Neg(vm *VM, frame *Frame) (err error) {
+func f32Neg(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -62,7 +62,7 @@ func f32Neg(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Neg(vm *VM, frame *Frame) (err error) {
+func f64Neg(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -78,7 +78,7 @@ func f64Neg(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Ceil(vm *VM, frame *Frame) (err error) {
+func f32Ceil(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -94,7 +94,7 @@ func f32Ceil(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Ceil(vm *VM, frame *Frame) (err error) {
+func f64Ceil(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -110,7 +110,7 @@ func f64Ceil(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Floor(vm *VM, frame *Frame) (err error) {
+func f32Floor(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -126,7 +126,7 @@ func f32Floor(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Floor(vm *VM, frame *Frame) (err error) {
+func f64Floor(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -142,7 +142,7 @@ func f64Floor(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Trunc(vm *VM, frame *Frame) (err error) {
+func f32Trunc(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -158,7 +158,7 @@ func f32Trunc(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Trunc(vm *VM, frame *Frame) (err error) {
+func f64Trunc(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -174,7 +174,7 @@ func f64Trunc(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Nearest(vm *VM, frame *Frame) (err error) {
+func f32Nearest(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -190,7 +190,7 @@ func f32Nearest(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Nearest(vm *VM, frame *Frame) (err error) {
+func f64Nearest(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -206,7 +206,7 @@ func f64Nearest(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Sqrt(vm *VM, frame *Frame) (err error) {
+func f32Sqrt(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -222,7 +222,7 @@ func f32Sqrt(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Sqrt(vm *VM, frame *Frame) (err error) {
+func f64Sqrt(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -238,7 +238,7 @@ func f64Sqrt(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32copySign(vm *VM, frame *Frame) (err error) {
+func f32copySign(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	b, a, err := pop2(vm, frame)
 	if err != nil {
@@ -260,7 +260,7 @@ func f32copySign(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64copySign(vm *VM, frame *Frame) (err error) {
+func f64copySign(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	b, a, err := pop2(vm, frame)
 	if err != nil {
@@ -282,7 +282,7 @@ func f64copySign(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func promoteF32ToF64(vm *VM, frame *Frame) (err error) {
+func promoteF32ToF64(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

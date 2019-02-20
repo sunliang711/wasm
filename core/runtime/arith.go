@@ -24,7 +24,7 @@ const (
 	ARITH_ROTR
 )
 
-func i32_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+func i32_arith(vm *WasmInterpreter, frame *Frame, arithType byte) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -383,7 +383,7 @@ const (
 	I64_EQZ
 )
 
-func eqz(vm *VM, frame *Frame, eqType byte) (err error) {
+func eqz(vm *WasmInterpreter, frame *Frame, eqType byte) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -407,7 +407,7 @@ func eqz(vm *VM, frame *Frame, eqType byte) (err error) {
 	return
 }
 
-func i64_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+func i64_arith(vm *WasmInterpreter, frame *Frame, arithType byte) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -761,7 +761,7 @@ func i64_arith(vm *VM, frame *Frame, arithType byte) (err error) {
 	return
 }
 
-func f32_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+func f32_arith(vm *WasmInterpreter, frame *Frame, arithType byte) (err error) {
 	defer utils.CatchError(&err)
 	b, a, err := pop2(vm, frame)
 	if err != nil {
@@ -865,7 +865,7 @@ func f32_arith(vm *VM, frame *Frame, arithType byte) (err error) {
 	return
 }
 
-func f64_arith(vm *VM, frame *Frame, arithType byte) (err error) {
+func f64_arith(vm *WasmInterpreter, frame *Frame, arithType byte) (err error) {
 	defer utils.CatchError(&err)
 	b, a, err := pop2(vm, frame)
 	if err != nil {

@@ -12,7 +12,7 @@ const (
 	UI64Convert
 )
 
-func f32Convert(vm *VM, frame *Frame, convertType byte) (err error) {
+func f32Convert(vm *WasmInterpreter, frame *Frame, convertType byte) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -52,7 +52,7 @@ func f32Convert(vm *VM, frame *Frame, convertType byte) (err error) {
 	return
 }
 
-func f64Convert(vm *VM, frame *Frame, convertType byte) (err error) {
+func f64Convert(vm *WasmInterpreter, frame *Frame, convertType byte) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

@@ -12,7 +12,7 @@ const (
 	UF64TRUNC
 )
 
-func i32Trunc(vm *VM, frame *Frame, truncType byte) (err error) {
+func i32Trunc(vm *WasmInterpreter, frame *Frame, truncType byte) (err error) {
 	defer utils.CatchError(&err)
 
 	a, err := pop1(vm, frame)
@@ -53,7 +53,7 @@ func i32Trunc(vm *VM, frame *Frame, truncType byte) (err error) {
 	return
 }
 
-func i64Trunc(vm *VM, frame *Frame, truncType byte) (err error) {
+func i64Trunc(vm *WasmInterpreter, frame *Frame, truncType byte) (err error) {
 	defer utils.CatchError(&err)
 
 	a, err := pop1(vm, frame)
@@ -94,7 +94,7 @@ func i64Trunc(vm *VM, frame *Frame, truncType byte) (err error) {
 	return
 }
 
-func wrapI64ToI32(vm *VM, frame *Frame) (err error) {
+func wrapI64ToI32(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

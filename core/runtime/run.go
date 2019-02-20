@@ -7,7 +7,7 @@ import (
 	"wasm/utils"
 )
 
-func (vm *VM) Run(functionNameOrID interface{}, predefine bool, totalGas uint64, params ...interface{}) (usedGas uint64, err error) {
+func (vm *WasmInterpreter) Run(functionNameOrID interface{}, predefine bool, totalGas uint64, params ...interface{}) (usedGas uint64, err error) {
 	//TODO check all type assertion
 	defer utils.CatchError(&err)
 	frame := vm.GetCurrentFrame()

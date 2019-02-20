@@ -10,7 +10,7 @@ const (
 	I64_POPCNT
 )
 
-func popcnt(vm *VM, frame *Frame, popCntType byte) (err error) {
+func popcnt(vm *WasmInterpreter, frame *Frame, popCntType byte) (err error) {
 	defer utils.CatchError(&err)
 
 	a, err := pop1(vm, frame)

@@ -6,7 +6,7 @@ import (
 	"wasm/utils"
 )
 
-func getLocal(vm *VM, frame *Frame) (err error) {
+func getLocal(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -23,7 +23,7 @@ func getLocal(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func setLocal(vm *VM, frame *Frame) (err error) {
+func setLocal(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -44,7 +44,7 @@ func setLocal(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func teeLocal(vm *VM, frame *Frame) (err error) {
+func teeLocal(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -65,7 +65,7 @@ func teeLocal(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func getGlobal(vm *VM, frame *Frame) (err error) {
+func getGlobal(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -82,7 +82,7 @@ func getGlobal(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func setGlobal(vm *VM, frame *Frame) (err error) {
+func setGlobal(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]

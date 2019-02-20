@@ -50,7 +50,7 @@ func test(t *testing.T, filename string, gas uint64, funcName string, predefine 
 		t.Fatal(err)
 	}
 
-	vm, err := NewVM(parser.Module)
+	vm, err := NewWasmInterpreter(parser.Module)
 	if err != nil {
 		t.Fatal(err)
 	}

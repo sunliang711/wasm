@@ -12,7 +12,7 @@ const (
 	F64_CONST
 )
 
-func defConst(vm *VM, frame *Frame, constType byte) (err error) {
+func defConst(vm *WasmInterpreter, frame *Frame, constType byte) (err error) {
 	defer utils.CatchError(&err)
 	ins := frame.Instruction[frame.PC]
 	switch constType {

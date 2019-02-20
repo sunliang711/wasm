@@ -2,7 +2,7 @@ package runtime
 
 import "wasm/core/IR"
 
-func (f *Frame) runBinaryOp(vm *VM, ins *IR.Instruction) {
+func (f *Frame) runBinaryOp(vm *WasmInterpreter, ins *IR.Instruction) {
 	switch ins.Op.Code {
 	case IR.OPCi32_trunc_s_sat_f32:
 	case IR.OPCi32_trunc_u_sat_f32:

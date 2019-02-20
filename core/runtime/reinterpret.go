@@ -7,7 +7,7 @@ import (
 	"wasm/utils"
 )
 
-func i32Reinterpret(vm *VM, frame *Frame) (err error) {
+func i32Reinterpret(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -24,7 +24,7 @@ func i32Reinterpret(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func i64Reinterpret(vm *VM, frame *Frame) (err error) {
+func i64Reinterpret(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -41,7 +41,7 @@ func i64Reinterpret(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f32Reinterpret(vm *VM, frame *Frame) (err error) {
+func f32Reinterpret(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {
@@ -67,7 +67,7 @@ func f32Reinterpret(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func f64Reinterpret(vm *VM, frame *Frame) (err error) {
+func f64Reinterpret(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

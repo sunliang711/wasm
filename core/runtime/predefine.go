@@ -2,7 +2,7 @@ package runtime
 
 type PredefinedFunction struct {
 	Name   string
-	Action func(vm *VM, frame *Frame, params ...interface{}) interface{}
+	Action func(vm *WasmInterpreter, frame *Frame, params ...interface{}) interface{}
 }
 
 var (

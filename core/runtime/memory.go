@@ -10,7 +10,7 @@ import (
 
 //TODO check vm.Memory boundary
 
-func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
+func i32_load(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Empty() {
 		vm.panic(types.ErrStackSizeErr)
@@ -47,7 +47,7 @@ func i32_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bo
 	return
 }
 
-func i64_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
+func i64_load(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int, isSignExtend bool) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Empty() {
 		vm.panic(types.ErrStackSizeErr)
@@ -91,7 +91,7 @@ func i64_load(vm *VM, frame *Frame, offset uint32, numBytes int, isSignExtend bo
 	return
 }
 
-func i32_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+func i32_store(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -119,7 +119,7 @@ func i32_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
 	return
 }
 
-func i64_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+func i64_store(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -149,7 +149,7 @@ func i64_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
 	return
 }
 
-func float_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+func float_store(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int) (err error) {
 	defer utils.CatchError(&err)
 	if frame.Stack.Len() < 2 {
 		vm.panic(types.ErrStackSizeErr)
@@ -175,7 +175,7 @@ func float_store(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) 
 	return
 }
 
-func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
+func float_load(vm *WasmInterpreter, frame *Frame, offset uint32, numBytes int) (err error) {
 	defer utils.CatchError(&err)
 
 	if frame.Stack.Empty() {
@@ -202,7 +202,7 @@ func float_load(vm *VM, frame *Frame, offset uint32, numBytes int) (err error) {
 	return
 }
 
-func memory_size(vm *VM, frame *Frame) (err error) {
+func memory_size(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	pageSize := int32(len(vm.Memory) / PAGESIZE)
 	frame.Stack.Push(&Value{IR.TypeI32, pageSize})
@@ -210,7 +210,7 @@ func memory_size(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func memory_grow(vm *VM, frame *Frame) (err error) {
+func memory_grow(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 	originalSize := int32(len(vm.Memory) / PAGESIZE)
 	if len(vm.Module.Memories.Defs) == 0 {

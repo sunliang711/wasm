@@ -10,7 +10,7 @@ const (
 	UI32Extend
 )
 
-func i64Extend(vm *VM, frame *Frame, extendType byte) (err error) {
+func i64Extend(vm *WasmInterpreter, frame *Frame, extendType byte) (err error) {
 	defer utils.CatchError(&err)
 	a, err := pop1(vm, frame)
 	if err != nil {

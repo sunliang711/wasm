@@ -5,7 +5,7 @@ import (
 	"wasm/utils"
 )
 
-func br(vm *VM, frame *Frame, endIndice []int) (err error) {
+func br(vm *WasmInterpreter, frame *Frame, endIndice []int) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -19,7 +19,7 @@ func br(vm *VM, frame *Frame, endIndice []int) (err error) {
 	return
 }
 
-func br_if(vm *VM, frame *Frame, endIndice []int) (err error) {
+func br_if(vm *WasmInterpreter, frame *Frame, endIndice []int) (err error) {
 	defer utils.CatchError(&err)
 
 	con, err := pop1(vm, frame)
@@ -45,7 +45,7 @@ func br_if(vm *VM, frame *Frame, endIndice []int) (err error) {
 	}
 	return
 }
-func br_table(vm *VM, frame *Frame, endIndice []int) (err error) {
+func br_table(vm *WasmInterpreter, frame *Frame, endIndice []int) (err error) {
 	defer utils.CatchError(&err)
 	return
 }

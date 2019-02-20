@@ -6,7 +6,7 @@ import (
 	"wasm/utils"
 )
 
-func returnFunc(vm *VM, frame **Frame) (exit bool, err error) {
+func returnFunc(vm *WasmInterpreter, frame **Frame) (exit bool, err error) {
 	defer utils.CatchError(&err)
 
 	var retV IR.InterfaceValue
@@ -32,7 +32,7 @@ func returnFunc(vm *VM, frame **Frame) (exit bool, err error) {
 	return
 }
 
-func call(vm *VM, frame **Frame, predefine bool) (err error) {
+func call(vm *WasmInterpreter, frame **Frame, predefine bool) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := (*frame).Instruction[(*frame).PC]
@@ -74,7 +74,7 @@ func call(vm *VM, frame **Frame, predefine bool) (err error) {
 	return
 }
 
-func call_indirect(vm *VM, frame **Frame) (err error) {
+func call_indirect(vm *WasmInterpreter, frame **Frame) (err error) {
 	defer utils.CatchError(&err)
 	//TODO: check imm
 	//imm, ok := ins.Imm.(*IR.CallIndirectImm)
@@ -119,7 +119,7 @@ func call_indirect(vm *VM, frame **Frame) (err error) {
 	return
 }
 
-func end(vm *VM, frame **Frame, ifStack *utils.Stack) (exit bool, err error) {
+func end(vm *WasmInterpreter, frame **Frame, ifStack *utils.Stack) (exit bool, err error) {
 	defer utils.CatchError(&err)
 
 	ins := (*frame).Instruction[(*frame).PC]
@@ -170,7 +170,7 @@ func end(vm *VM, frame **Frame, ifStack *utils.Stack) (exit bool, err error) {
 	return
 }
 
-func ifFunc(vm *VM, frame *Frame, ifStack *utils.Stack) (err error) {
+func ifFunc(vm *WasmInterpreter, frame *Frame, ifStack *utils.Stack) (err error) {
 	defer utils.CatchError(&err)
 
 	if frame.Stack.Len() < 1 {
@@ -192,7 +192,7 @@ func ifFunc(vm *VM, frame *Frame, ifStack *utils.Stack) (err error) {
 	return
 }
 
-func elseFunc(vm *VM, frame *Frame, ifStack *utils.Stack) (err error) {
+func elseFunc(vm *WasmInterpreter, frame *Frame, ifStack *utils.Stack) (err error) {
 	defer utils.CatchError(&err)
 
 	ins := frame.Instruction[frame.PC]
@@ -204,7 +204,7 @@ func elseFunc(vm *VM, frame *Frame, ifStack *utils.Stack) (err error) {
 	return
 }
 
-func selectFunc(vm *VM, frame *Frame) (err error) {
+func selectFunc(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	if frame.Stack.Len() < 3 {
@@ -222,7 +222,7 @@ func selectFunc(vm *VM, frame *Frame) (err error) {
 	return
 }
 
-func drop(vm *VM, frame *Frame) (err error) {
+func drop(vm *WasmInterpreter, frame *Frame) (err error) {
 	defer utils.CatchError(&err)
 
 	if frame.Stack.Len() < 1 {

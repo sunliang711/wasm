@@ -6,7 +6,7 @@ import (
 	"wasm/types"
 )
 
-func pop1(vm *VM, frame *Frame) (IR.InterfaceValue, error) {
+func pop1(vm *WasmInterpreter, frame *Frame) (IR.InterfaceValue, error) {
 	if frame.Stack.Len() < 1 {
 		return nil, fmt.Errorf(types.ErrStackSizeErr)
 	}
@@ -14,7 +14,7 @@ func pop1(vm *VM, frame *Frame) (IR.InterfaceValue, error) {
 	return ret, nil
 }
 
-func pop2(vm *VM, frame *Frame) (IR.InterfaceValue, IR.InterfaceValue, error) {
+func pop2(vm *WasmInterpreter, frame *Frame) (IR.InterfaceValue, IR.InterfaceValue, error) {
 	if frame.Stack.Len() < 2 {
 		return nil, nil, fmt.Errorf(types.ErrStackSizeErr)
 	}
