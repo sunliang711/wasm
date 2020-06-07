@@ -2,6 +2,7 @@ package IR
 
 import (
 	"fmt"
+	"sync"
 )
 
 type InterfaceValue interface {
@@ -11,6 +12,7 @@ type InterfaceValue interface {
 
 type Stack struct {
 	data []InterfaceValue
+	mtx  sync.Mutex
 }
 
 func (s *Stack) Len() int {
@@ -22,10 +24,14 @@ func (s *Stack) Empty() bool {
 }
 
 func (s *Stack) Push(v InterfaceValue) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	s.data = append(s.data, v)
 }
 
 func (s *Stack) Pop() (InterfaceValue, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	if s.Empty() {
 		return nil, fmt.Errorf("Empty Stack")
 	}
