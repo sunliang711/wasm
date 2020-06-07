@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"wasm/parser"
 )
 
@@ -34,7 +35,11 @@ func main() {
 	//	fmt.Println("Read ",n," bytes")
 	//}
 	//fmt.Println("counts: ",counts)
-	parser, err := parser.NewParser(inputfile)
+	rd, err := os.Open(inputfile)
+	if err != nil {
+		panic(err)
+	}
+	parser, err := parser.NewParser(rd)
 	if err != nil {
 		panic(err)
 	}
